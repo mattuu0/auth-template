@@ -1,0 +1,12 @@
+FROM alpine:latest
+
+# 作業ディレクトリを追加
+WORKDIR /sslKeys
+
+# openssl を追加
+RUN apk add openssl
+
+# 鍵を生成
+CMD openssl genrsa -out ./server.key 4096 && \
+    openssl req -subj "/C=JP/ST=Tokyo/O=APP_CA/CN=APP_CA" -out ./server.csr -key ./server.key -new && \
+    openssl x509 -req -days 3650 -signkey ./server.key -in ./server.csr -out ./server.crt

@@ -1,2 +1,32 @@
-service:
+services:
+    # リバースプロキシけんWeサーバ
+    nginx:
+        hostname: nginx
+        image: nginx:latest
+        ports:
+            - 8370:8443
+        restart: always
+        tty: true
+        volumes:
+            - ./nginx/configs:/etc/nginx/conf.d/
+            - ./nginx/keys:/etc/nginx/keys
+            - ./nginx/statics:/etc/nginx/static/statics
+        depends_on:
+            - selfssl
     
+    # 認証用コンテナ
+    auth:
+        hostname: auth
+        build:
+            context: ./auth
+            dockerfile: dockerfile
+            target: Develop
+        tty: true
+        volumes:
+            - ./auth/src:/root/src
+        restart: always
+    # 自己署名用のコンテナ
+    selfssl:
+        build: ./openssl
+        volumes:
+            - ./nginx/keys:/sslKeys:delegated
