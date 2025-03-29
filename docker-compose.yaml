@@ -25,6 +25,18 @@ services:
         volumes:
             - ./auth/src:/root/src
         restart: always
+    # データベース
+    mysql:
+        hostname: db
+        image: mysql
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            TZ: Asia/Tokyo
+        volumes:
+            - ./databae/data:/var/lib/mysql
+            - ./my.cnf:/etc/mysql/conf.d/my.cnf
+
     # 自己署名用のコンテナ
     selfssl:
         build: ./openssl
