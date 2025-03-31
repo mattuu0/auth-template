@@ -1,4 +1,4 @@
 nginx/keys/*
 .DS_Store
 **__debug_bin**
-databae/data/
+database/data/

@@ -32,13 +32,19 @@ services:
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: root
+            MYSQL_USER: main
+            MYSQL_PASSWORD: main
+            MYSQL_DATABASE: maindb
             TZ: Asia/Tokyo
         volumes:
-            - ./databae/data:/var/lib/mysql
-            - ./my.cnf:/etc/mysql/conf.d/my.cnf
+            - dbdata:/var/lib/mysql
+            - ./config/my.cnf:/etc/mysql/conf.d/my.cnf
 
     # 自己署名用のコンテナ
     selfssl:
         build: ./openssl
         volumes:
             - ./nginx/keys:/sslKeys:delegated
+
+volumes:
+    dbdata:
