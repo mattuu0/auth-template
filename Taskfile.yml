@@ -4,7 +4,6 @@ version: '3'
 
 vars:
   GREETING: Hello, World!
-  DBContainer: mysql
 
 tasks:
   # コンテナ落として全て削除
@@ -31,6 +30,8 @@ tasks:
       - docker compose exec {{.DBContainer}} mysql -u root -p --password=$DBPassword
     env:
       DBPassword: root
+    vars:
+      DBContainer: mysql
     silent: true
   
   # データベースのリセット
