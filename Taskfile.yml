@@ -27,10 +27,11 @@ tasks:
   # データベース接続
   dbshell:
     cmds:
-      - docker compose exec {{.DBContainer}} mysql -u root -p --password=$DBPassword
+      - docker compose exec {{.DBContainer}} mysql -u root -p {{.Database}} --password=$DBPassword
     env:
       DBPassword: root
     vars:
+      Database: maindb
       DBContainer: mysql
     silent: true
   
