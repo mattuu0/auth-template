@@ -4,15 +4,16 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
+	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/google"
 )
 
 // 認証用のプロバイダ
-type OauthProvider struct {
-
-}
+type OauthProvider struct {}
 
 // 認証を開始するメソッド
 func (provider *OauthProvider) StartOauth(ctx echo.Context,providerName string) {
@@ -46,4 +47,10 @@ func (provider *OauthProvider) CallbackOauth(ctx echo.Context,providerName strin
 // コンテキストを設定
 func (provider *OauthProvider) contextWithProviderName(ctx echo.Context, providerName string) (*http.Request) {
 	return	ctx.Request().WithContext(context.WithValue(ctx.Request().Context(), "provider", providerName))
+}
+
+func UseProviders() {
+	goth.UseProviders(
+		google.New(os.Getenv("GoogleClientID"),os.Getenv("GoogleClientSecret"),os.Getenv("GoogleCallback")),
+	)
 }
