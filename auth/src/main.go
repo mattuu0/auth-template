@@ -16,10 +16,15 @@ func main() {
 	// 初期化
 	Init()
 
+	// エンジン初期化
 	router := echo.New()
 
-	router.GET("/", func(ctx echo.Context) error {
-		return ctx.String(http.StatusOK, "Hello, World!")
+	// ルーティング設定
+	SetupRouter(router)
+
+	// ヘルスチェック
+	router.GET("/health", func(ctx echo.Context) error {
+		return ctx.String(http.StatusOK, "OK")
 	})
 	
 	router.Logger.Fatal(router.Start(":8080"))

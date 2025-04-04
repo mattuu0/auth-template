@@ -1,0 +1,17 @@
+package main
+
+import (
+	"auth/controllers"
+
+	"github.com/labstack/echo/v4"
+)
+
+func SetupRouter(router *echo.Echo) {
+	// ルーティング設定
+	// ベーシックユーザーグループ
+	basicg := router.Group("/basic")
+	{
+		basicg.POST("/create", controllers.CreateBasicUser)
+		basicg.POST("/login", controllers.LoginBasicUser)
+	}
+}
