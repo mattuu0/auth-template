@@ -23,7 +23,7 @@ type Provider struct {
 	CallbackURL  string       // 認証プロバイダのコールバックURL
 	ProviderCode ProviderCode `gorm:"unique"`                  // 認証プロバイダのコード
 	IsEnabled    int          `default:0`                      // 認証プロバイダの有効状態
-	Users        []User       `gorm:"foreignKey:ProviderCode"` // 認証プロバイダに紐付けられたユーザー
+	Users        []User       `gorm:"foreignKey:ProviderCode;references:ProviderCode"` // 認証プロバイダに紐付けられたユーザー
 }
 
 // プロバイダを取得

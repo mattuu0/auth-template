@@ -22,6 +22,19 @@ func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
 	// 現在時刻を取得
 	now := utils.NowTime()
 
+	// ユーザーを取得する
+	_, err := models.GetUserByEmail(args.Email)
+
+	// エラー処理
+	if err == nil {
+		return "",structs.HttpResult{
+			Code:    http.StatusConflict,
+			Message: "user already exists",
+			Error:   err,
+			Success: false,
+		}
+	}
+
 	// パスワードをハッシュ化する
 	hashed, err := utils.HashPassword(args.Password)
 
