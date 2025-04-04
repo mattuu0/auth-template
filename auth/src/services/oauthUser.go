@@ -24,7 +24,6 @@ func CreateOauthUser(args OauthUserArgs) error {
 		UserID:       uid,
 		Name:         args.Name,
 		Email:        args.Email,
-		ProviderCode: models.ProviderCode(args.ProviderCode),
 		PasswordHash: "",
 		CreatedAt:    now,
 	}, models.ProviderCode(args.ProviderCode))

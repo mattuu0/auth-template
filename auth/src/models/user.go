@@ -3,15 +3,23 @@ package models
 type User struct {
 	UserID       string       `gorm:"primaryKey"`
 	Name         string       // ユーザー名
-	Email        string       `gorm:"unique` // メールアドレス
+	Email        string       `gorm:"unique"` // メールアドレス
 	ProviderCode ProviderCode // 認証プロバイダ
-	PasswordHash string       `default:""`           // ハッシュ化されたパスワード
-	CreatedAt    int64        `gorm:"autoCreateTime` // ユーザー作成日
+	PasswordHash string       `default:""`            // ハッシュ化されたパスワード
+	CreatedAt    int64        `gorm:"autoCreateTime"` // ユーザー作成日
 }
 
 func CreateUser(user *User, ProviderCode ProviderCode) error {
 	// プロバイダを取得する
 	provider, err := GetProvider(ProviderCode)
+
+	// エラー処理
+	if err != nil {
+		return err
+	}
+
+	// ユーザを作成する
+	err = dbconn.Create(user).Error
 
 	// エラー処理
 	if err != nil {
@@ -26,7 +34,7 @@ func CreateUser(user *User, ProviderCode ProviderCode) error {
 		return err
 	}
 
-	return dbconn.Create(user).Error
+	return nil
 }
 
 func GetUser(userID string) (*User, error) {
