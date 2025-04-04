@@ -1,7 +1,20 @@
+###
+# ログイン
 POST https://localhost:8370/auth/basic/login HTTP/1.1
 Content-Type: application/json
 
 {
     "email": "nV5oY@example.com",
     "password": "password"
+}
+
+###
+# サインアップ
+POST https://localhost:8370/auth/basic/create HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "nV5oY@example.com",
+    "password": "password",
+    "name": "name"
 }
