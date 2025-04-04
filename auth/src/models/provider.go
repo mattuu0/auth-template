@@ -4,19 +4,30 @@ import (
 	"auth/logger"
 )
 
+type ProviderCode string
+
+const (
+	Google    ProviderCode = "google"
+	Github    ProviderCode = "github"
+	Discord   ProviderCode = "discord"
+	Line      ProviderCode = "line"
+	Microsoft ProviderCode = "microsoftonline"
+	Basic     ProviderCode = "basic"
+)
+
 // 認証プロバイダの設定テーブル
 type Provider struct {
-	ProviderName string `gorm:"primaryKey"` // 認証プロバイダ名
-	ClientID     string // 認証プロバイダのクライアントID
-	ClientSecret string // 認証プロバイダのクライアントシークレット
-	CallbackURL  string // 認証プロバイダのコールバックURL
-	ProviderCode string `gorm:"unique"`                  // 認証プロバイダのコード
-	IsEnabled    int    `default:0`                      // 認証プロバイダの有効状態
-	Users        []User `gorm:"foreignKey:ProviderCode"` // 認証プロバイダに紐付けられたユーザー
+	ProviderName string       `gorm:"primaryKey"` // 認証プロバイダ名
+	ClientID     string       // 認証プロバイダのクライアントID
+	ClientSecret string       // 認証プロバイダのクライアントシークレット
+	CallbackURL  string       // 認証プロバイダのコールバックURL
+	ProviderCode ProviderCode `gorm:"unique"`                  // 認証プロバイダのコード
+	IsEnabled    int          `default:0`                      // 認証プロバイダの有効状態
+	Users        []User       `gorm:"foreignKey:ProviderCode"` // 認証プロバイダに紐付けられたユーザー
 }
 
 // プロバイダを取得
-func GetProvider(providerCode string) (*Provider, error) {
+func GetProvider(providerCode ProviderCode) (*Provider, error) {
 	var provider Provider
 
 	// 取得する
@@ -36,7 +47,7 @@ func InitProviders() {
 		ClientID:     "",
 		ClientSecret: "",
 		CallbackURL:  "/auth/google/callback",
-		ProviderCode: "google",
+		ProviderCode: Google,
 		IsEnabled:    0,
 		Users:        []User{},
 	})
@@ -52,7 +63,7 @@ func InitProviders() {
 		ClientID:     "",
 		ClientSecret: "",
 		CallbackURL:  "/auth/github/callback",
-		ProviderCode: "github",
+		ProviderCode: Github,
 		IsEnabled:    0,
 		Users:        []User{},
 	})
@@ -68,7 +79,7 @@ func InitProviders() {
 		ClientID:     "",
 		ClientSecret: "",
 		CallbackURL:  "/auth/discord/callback",
-		ProviderCode: "discord",
+		ProviderCode: Discord,
 		IsEnabled:    0,
 		Users:        []User{},
 	})
@@ -84,7 +95,7 @@ func InitProviders() {
 		ClientID:     "",
 		ClientSecret: "",
 		CallbackURL:  "/auth/line/callback",
-		ProviderCode: "line",
+		ProviderCode: Line,
 		IsEnabled:    0,
 		Users:        []User{},
 	})
@@ -100,7 +111,7 @@ func InitProviders() {
 		ClientID:     "",
 		ClientSecret: "",
 		CallbackURL:  "/auth/microsoftonline/callback",
-		ProviderCode: "microsoftonline",
+		ProviderCode: Microsoft,
 		IsEnabled:    0,
 		Users:        []User{},
 	})
@@ -109,14 +120,14 @@ func InitProviders() {
 	if err != nil {
 		logger.PrintErr(err)
 	}
-	
+
 	// basic
 	err = CreateProvider(&Provider{
 		ProviderName: "Basic",
 		ClientID:     "",
 		ClientSecret: "",
 		CallbackURL:  "",
-		ProviderCode: "basic",
+		ProviderCode: Basic,
 		IsEnabled:    0,
 		Users:        []User{},
 	})
