@@ -17,8 +17,6 @@ func RequireAuth(next echo.HandlerFunc) echo.HandlerFunc {
 			return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "unauthorized"})
 		}
 
-		logger.Println(token)
-
 		// トークンを検証
 		session, err := services.GetSession(token)
 		if err != nil {
