@@ -4,7 +4,7 @@ import "golang.org/x/crypto/bcrypt"
 
 const (
 	// bcrypt のコスト
-	bcryptCost = 15
+	bcryptCost = 10
 )
 
 // パスワードをハッシュ化
