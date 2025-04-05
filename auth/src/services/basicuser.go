@@ -6,6 +6,8 @@ import (
 	"auth/utils"
 	"errors"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 type CreateBasicUserArgs struct {
@@ -15,7 +17,7 @@ type CreateBasicUserArgs struct {
 }
 
 // 一般ユーザーを作成する
-func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
+func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
 	// UUID を生成
 	uid := utils.GenID()
 
@@ -27,9 +29,11 @@ func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
 
 	// エラー処理
 	if err == nil {
-		return "",structs.HttpResult{
-			Code:    http.StatusConflict,
-			Message: "user already exists",
+		return "", structs.HttpResult{
+			Code: http.StatusConflict,
+			Message: echo.Map{
+				"message": "user already exists",
+			},
 			Error:   err,
 			Success: false,
 		}
@@ -40,9 +44,11 @@ func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
 
 	// エラー処理
 	if err != nil {
-		return "",structs.HttpResult{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to hash password",
+		return "", structs.HttpResult{
+			Code: http.StatusInternalServerError,
+			Message: echo.Map{
+				"message": "failed to hash password",
+			},
 			Error:   err,
 			Success: false,
 		}
@@ -53,24 +59,28 @@ func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
 		UserID:       uid,
 		Name:         args.Name,
 		Email:        args.Email,
-		ProviderCode: "",
+		ProvCode:     "",
 		PasswordHash: hashed,
 		CreatedAt:    now,
 	}, models.Basic)
 
 	// エラー処理
 	if err != nil {
-		return "",structs.HttpResult{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to create user",
+		return "", structs.HttpResult{
+			Code: http.StatusInternalServerError,
+			Message: echo.Map{
+				"message": "failed to create user",
+			},
 			Error:   err,
 			Success: false,
 		}
 	}
 
 	return uid, structs.HttpResult{
-		Code:    http.StatusOK,
-		Message: "success",
+		Code: http.StatusOK,
+		Message: echo.Map{
+			"message": "success",
+		},
 		Error:   nil,
 		Success: true,
 	}
@@ -88,38 +98,67 @@ func LoginBasicUser(args LoginBasicUserArgs) structs.HttpResult {
 	// エラー処理
 	if err != nil {
 		return structs.HttpResult{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to get user",
+			Code: http.StatusInternalServerError,
+			Message: echo.Map{
+				"message": "failed to get user",
+			},
 			Error:   err,
 			Success: false,
 		}
 	}
 
 	// プロバイダをチェックする
-	if user.ProviderCode != models.Basic {
+	if user.ProvCode != models.Basic {
 		// basic 以外の場合はエラーを返す
 		return structs.HttpResult{
-			Code:    http.StatusBadRequest,
-			Message: "invalid provider",
+			Code: http.StatusBadRequest,
+			Message: echo.Map{
+				"message": "invalid provider",
+			},
 			Error:   errors.New("invalid provider"),
 			Success: false,
 		}
 	}
 
 	// パスワードをチェックする
-	if utils.CheckPasswordHash(args.Password, user.PasswordHash) {
+	if !utils.CheckPasswordHash(args.Password, user.PasswordHash) {
+		// パスワードが一致しない場合はエラーを返す
 		return structs.HttpResult{
-			Code:    http.StatusOK,
-			Message: "success",
-			Error:   nil,
-			Success: true,
+			Code: http.StatusBadRequest,
+			Message: echo.Map{
+				"message": "invalid password",
+			},
+			Error:   errors.New("invalid password"),
+			Success: false,
+		}
+	}
+
+	// セッションを作成する
+	token, err := NewSession(SessionArgs{
+		UserID:    user.UserID,
+		RemoteIP:  "",
+		UserAgent: "",
+	})
+
+	// エラー処理
+	if err != nil {
+		return structs.HttpResult{
+			Code: http.StatusInternalServerError,
+			Message: echo.Map{
+				"message": "failed to create session",
+				"error":   err.Error(),
+			},
+			Error:   err,
+			Success: false,
 		}
 	}
 
 	return structs.HttpResult{
-		Code:    http.StatusBadRequest,
-		Message: "invalid password",
-		Error:   errors.New("invalid password"),
-		Success: false,
+		Code: http.StatusOK,
+		Message: echo.Map{
+			"token": token,
+		},
+		Error:   nil,
+		Success: true,
 	}
 }
