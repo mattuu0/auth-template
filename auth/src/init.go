@@ -11,7 +11,7 @@ func SetupRouter(router *echo.Echo) {
 	// ベーシックユーザーグループ
 	basicg := router.Group("/basic")
 	{
-		basicg.POST("/create", controllers.CreateBasicUser)
+		basicg.POST("/signup", controllers.CreateBasicUser)
 		basicg.POST("/login", controllers.LoginBasicUser)
 	}
 }

@@ -10,7 +10,7 @@ Content-Type: application/json
 
 ###
 # サインアップ
-POST https://localhost:8370/auth/basic/create HTTP/1.1
+POST https://localhost:8370/auth/basic/signup HTTP/1.1
 Content-Type: application/json
 
 {
