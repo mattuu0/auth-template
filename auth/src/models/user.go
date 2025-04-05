@@ -6,6 +6,7 @@ type User struct {
 	Email        string       `gorm:"unique"` // メールアドレス
 	ProviderCode ProviderCode // 認証プロバイダ
 	PasswordHash string       `default:""`            // ハッシュ化されたパスワード
+	Sessions     []Session    `gorm:"foreignKey:UserID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	CreatedAt    int64        `gorm:"autoCreateTime"` // ユーザー作成日
 }
 
