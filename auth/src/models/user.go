@@ -37,18 +37,29 @@ func CreateUser(user *User, ProviderCode ProviderCode) error {
 	return nil
 }
 
+// ユーザーを取得
 func GetUser(userID string) (*User, error) {
 	var user User
 
 	// 取得する
-	err := dbconn.First(&user, &User{UserID: userID}).Error
+	err := dbconn.Where(&User{UserID: userID}).First(&user).Error
 	return &user, err
 }
 
+// メールアドレスからユーザーを取得
 func GetUserByEmail(email string) (*User, error) {
 	var user User
 
 	// 取得する
-	err := dbconn.First(&user, &User{Email: email}).Error
+	err := dbconn.Where(&User{Email: email}).First(&user).Error
 	return &user, err
+}
+
+// 全てのユーザーを取得
+func GetAllUsers() ([]User, error) {
+	var users []User
+
+	// 取得する
+	err := dbconn.Find(&users).Error
+	return users, err
 }

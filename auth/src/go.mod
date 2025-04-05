@@ -8,6 +8,8 @@ require (
 	gorm.io/gorm v1.25.12
 )
 
+require github.com/mattn/go-sqlite3 v1.14.22 // indirect
+
 require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -22,4 +24,5 @@ require (
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
+	gorm.io/driver/sqlite v1.5.7
 )
