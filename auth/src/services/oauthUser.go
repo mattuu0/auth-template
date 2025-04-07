@@ -9,10 +9,12 @@ type OauthUserArgs struct {
 	Name         string // ユーザー名
 	Email        string // メールアドレス
 	ProviderCode string // 認証プロバイダコード
+	RemoteIP     string // IPアドレス
+	UserAgent    string // User-Agent
 }
 
 // Oauthユーザーを作成する
-func LoginOauthUser(args OauthUserArgs) (string,error) {
+func LoginOauthUser(args OauthUserArgs) (string, error) {
 	// UUID を生成
 	uid := utils.GenID()
 
@@ -26,7 +28,7 @@ func LoginOauthUser(args OauthUserArgs) (string,error) {
 	if err == nil {
 		// ユーザーが取得できた時
 		// セッションを追加する
-		token,err := NewSession(SessionArgs{
+		token, err := NewSession(SessionArgs{
 			UserID:    user.UserID,
 			RemoteIP:  "",
 			UserAgent: "",
@@ -52,8 +54,8 @@ func LoginOauthUser(args OauthUserArgs) (string,error) {
 	// トークンを生成
 	token, err := NewSession(SessionArgs{
 		UserID:    uid,
-		RemoteIP:  "",
-		UserAgent: "",
+		RemoteIP:  args.RemoteIP,
+		UserAgent: args.UserAgent,
 	})
 
 	// エラー処理

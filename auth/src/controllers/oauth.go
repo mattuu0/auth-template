@@ -37,6 +37,8 @@ func CallbackOauth(ctx echo.Context) error {
 		Name:         user.Name,
 		Email:        user.Email,
 		ProviderCode: provider,
+		RemoteIP:     ctx.RealIP(),
+		UserAgent:    ctx.Request().UserAgent(),
 	})
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
