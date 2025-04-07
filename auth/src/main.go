@@ -1,10 +1,12 @@
 package main
 
 import (
+	"auth/oauth2"
 	"auth/models"
 	"auth/services"
 	"net/http"
 
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -22,6 +24,10 @@ func main() {
 	Init()
 
 	// エンジン初期化
+	// 認証初期化
+	oauth2.UseProviders()
+
+	// ルータ
 	router := echo.New()
 
 	// ルーティング設定
@@ -30,6 +36,22 @@ func main() {
 	// ヘルスチェック
 	router.GET("/health", func(ctx echo.Context) error {
 		return ctx.String(http.StatusOK, "OK")
+	})
+
+	router.GET("/:provider",func(ctx echo.Context) error {
+		provider := ctx.Param("provider")
+
+		OauthProv.StartOauth(ctx,provider)
+
+		return nil
+	})
+
+	router.GET("/:provider/callback",func(ctx echo.Context) error {
+		provider := ctx.Param("provider")
+
+		OauthProv.CallbackOauth(ctx,provider)
+
+		return ctx.Redirect(http.StatusTemporaryRedirect,"/auth/")
 	})
 	
 	router.Logger.Fatal(router.Start(":8080"))
