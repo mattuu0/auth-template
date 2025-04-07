@@ -60,7 +60,8 @@ func UseProviders() {
 		logger.PrintErr(err)
 	}
 
-	if err == nil {
+	// エラー処理 と 有効かどうか
+	if err == nil && gprovider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
 		providers = append(providers,google.New(gprovider.ClientID,gprovider.ClientSecret,gprovider.CallbackURL))
 	}
@@ -73,7 +74,8 @@ func UseProviders() {
 		logger.PrintErr(err)
 	}
 
-	if err == nil {
+	// エラー処理 と 有効かどうか
+	if err == nil && githubProvider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
 		providers = append(providers,github.New(githubProvider.ClientID,githubProvider.ClientSecret,githubProvider.CallbackURL))
 	}
@@ -86,8 +88,8 @@ func UseProviders() {
 		logger.PrintErr(err)
 	}
 
-	// エラー処理
-	if err == nil {
+	// エラー処理 と 有効かどうか
+	if err == nil && microsoftProvider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
 		providers = append(providers,microsoftonline.New(microsoftProvider.ClientID,microsoftProvider.ClientSecret,microsoftProvider.CallbackURL))
 	}
@@ -100,8 +102,8 @@ func UseProviders() {
 		logger.PrintErr(err)
 	}
 
-	// エラー処理
-	if err == nil {
+	// エラー処理 と 有効かどうか
+	if err == nil && discordProvider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
 		providers = append(providers,discord.New(discordProvider.ClientID,discordProvider.ClientSecret,discordProvider.CallbackURL))
 	}
