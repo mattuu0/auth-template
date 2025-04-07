@@ -37,22 +37,6 @@ func main() {
 	router.GET("/health", func(ctx echo.Context) error {
 		return ctx.String(http.StatusOK, "OK")
 	})
-
-	router.GET("/:provider",func(ctx echo.Context) error {
-		provider := ctx.Param("provider")
-
-		OauthProv.StartOauth(ctx,provider)
-
-		return nil
-	})
-
-	router.GET("/:provider/callback",func(ctx echo.Context) error {
-		provider := ctx.Param("provider")
-
-		OauthProv.CallbackOauth(ctx,provider)
-
-		return ctx.Redirect(http.StatusTemporaryRedirect,"/auth/")
-	})
 	
 	router.Logger.Fatal(router.Start(":8080"))
 }

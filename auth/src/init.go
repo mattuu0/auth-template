@@ -25,4 +25,11 @@ func SetupRouter(router *echo.Echo) {
 
 	// ログアウト
 	router.POST("/logout",controllers.Logout,middlewares.RequireAuth)
+
+	// oauth グループ
+	oauthg := router.Group("/oauth")
+	{
+		oauthg.GET("/:provider",controllers.StartOauth)
+		oauthg.GET("/:provider/callback",controllers.CallbackOauth)
+	}
 }
