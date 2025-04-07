@@ -5,9 +5,13 @@ import (
 	"auth/middlewares"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func SetupRouter(router *echo.Echo) {
+	// logger 設定
+	router.Use(middleware.Logger())
+
 	// ルーティング設定
 	// ベーシックユーザーグループ
 	basicg := router.Group("/basic")
@@ -18,4 +22,7 @@ func SetupRouter(router *echo.Echo) {
 
 	// 情報を取得する
 	router.GET("/me", controllers.GetMe, middlewares.RequireAuth)
+
+	// ログアウト
+	router.POST("/logout",controllers.Logout,middlewares.RequireAuth)
 }

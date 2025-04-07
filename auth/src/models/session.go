@@ -24,7 +24,7 @@ func (usr *User) NewSession(session *Session) error {
 // セッションを削除
 func (usr *User) DeleteSession(sessionid string) error {
 	// ユーザのセッションから削除
-	err := dbconn.Model(usr).Association("Sessions").Delete(&Session{SessionID: sessionid})
+	err := dbconn.Model(usr).Association("Sessions").Unscoped().Delete(&Session{SessionID: sessionid})
 	
 	// エラー処理
 	if err != nil {
