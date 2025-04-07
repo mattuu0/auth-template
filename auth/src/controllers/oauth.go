@@ -12,6 +12,9 @@ import (
 func StartOauth(ctx echo.Context) error {
 	provider := ctx.Param("provider")
 
+	// oauth を更新
+	oauth2.UseProviders()
+
 	// 認証を開始
 	oauth2.StartOauth(ctx,provider)
 
