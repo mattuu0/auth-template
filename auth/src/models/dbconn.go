@@ -21,6 +21,7 @@ func Init() error {
 	// データベース接続確認
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Provider{})
+	db.AutoMigrate(&Session{})
 
 	// グローバル変数に格納
 	dbconn = db

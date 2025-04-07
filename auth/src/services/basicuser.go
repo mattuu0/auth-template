@@ -14,8 +14,8 @@ type CreateBasicUserArgs struct {
 	Password string // パスワード
 }
 
-// 一般ユーザーを作成する
-func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
+// 一般ユーザーを作成する (返却値: トークン, HttpResult)
+func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
 	// UUID を生成
 	uid := utils.GenID()
 
@@ -27,8 +27,8 @@ func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
 
 	// エラー処理
 	if err == nil {
-		return "",structs.HttpResult{
-			Code:    http.StatusConflict,
+		return "", structs.HttpResult{
+			Code: http.StatusConflict,
 			Message: "user already exists",
 			Error:   err,
 			Success: false,
@@ -40,8 +40,8 @@ func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
 
 	// エラー処理
 	if err != nil {
-		return "",structs.HttpResult{
-			Code:    http.StatusInternalServerError,
+		return "", structs.HttpResult{
+			Code: http.StatusInternalServerError,
 			Message: "failed to hash password",
 			Error:   err,
 			Success: false,
@@ -53,24 +53,41 @@ func CreateBasicUser(args CreateBasicUserArgs) (string,structs.HttpResult) {
 		UserID:       uid,
 		Name:         args.Name,
 		Email:        args.Email,
-		ProviderCode: "",
+		ProvCode:     "",
 		PasswordHash: hashed,
 		CreatedAt:    now,
 	}, models.Basic)
 
 	// エラー処理
 	if err != nil {
-		return "",structs.HttpResult{
-			Code:    http.StatusInternalServerError,
+		return "", structs.HttpResult{
+			Code: http.StatusInternalServerError,
 			Message: "failed to create user",
 			Error:   err,
 			Success: false,
 		}
 	}
 
-	return uid, structs.HttpResult{
-		Code:    http.StatusOK,
-		Message: "success",
+	// セッションを作成する
+	token, err := NewSession(SessionArgs{
+		UserID:   uid,
+		RemoteIP: "",
+		UserAgent: "",
+	})
+
+	// エラー処理
+	if err != nil {
+		return "", structs.HttpResult{
+			Code: http.StatusInternalServerError,
+			Message: "failed to create session",
+			Error:   err,
+			Success: false,
+		}
+	}
+
+	return token, structs.HttpResult{
+		Code: http.StatusOK,
+		Message: "user created",
 		Error:   nil,
 		Success: true,
 	}
@@ -81,14 +98,15 @@ type LoginBasicUserArgs struct {
 	Password string // パスワード
 }
 
-func LoginBasicUser(args LoginBasicUserArgs) structs.HttpResult {
+// ログインしてトークンを返す (返却値: トークン, HttpResult)
+func LoginBasicUser(args LoginBasicUserArgs) (string,structs.HttpResult) {
 	// ユーザーを取得する
 	user, err := models.GetUserByEmail(args.Email)
 
 	// エラー処理
 	if err != nil {
-		return structs.HttpResult{
-			Code:    http.StatusInternalServerError,
+		return "",structs.HttpResult{
+			Code: http.StatusInternalServerError,
 			Message: "failed to get user",
 			Error:   err,
 			Success: false,
@@ -96,10 +114,10 @@ func LoginBasicUser(args LoginBasicUserArgs) structs.HttpResult {
 	}
 
 	// プロバイダをチェックする
-	if user.ProviderCode != models.Basic {
+	if user.ProvCode != models.Basic {
 		// basic 以外の場合はエラーを返す
-		return structs.HttpResult{
-			Code:    http.StatusBadRequest,
+		return "",structs.HttpResult{
+			Code: http.StatusBadRequest,
 			Message: "invalid provider",
 			Error:   errors.New("invalid provider"),
 			Success: false,
@@ -107,19 +125,37 @@ func LoginBasicUser(args LoginBasicUserArgs) structs.HttpResult {
 	}
 
 	// パスワードをチェックする
-	if utils.CheckPasswordHash(args.Password, user.PasswordHash) {
-		return structs.HttpResult{
-			Code:    http.StatusOK,
-			Message: "success",
-			Error:   nil,
-			Success: true,
+	if !utils.CheckPasswordHash(args.Password, user.PasswordHash) {
+		// パスワードが一致しない場合はエラーを返す
+		return "",structs.HttpResult{
+			Code: http.StatusBadRequest,
+			Message: "invalid password",
+			Error:   errors.New("invalid password"),
+			Success: false,
 		}
 	}
 
-	return structs.HttpResult{
-		Code:    http.StatusBadRequest,
-		Message: "invalid password",
-		Error:   errors.New("invalid password"),
-		Success: false,
+	// セッションを作成する
+	token, err := NewSession(SessionArgs{
+		UserID:    user.UserID,
+		RemoteIP:  "",
+		UserAgent: "",
+	})
+
+	// エラー処理
+	if err != nil {
+		return "",structs.HttpResult{
+			Code: http.StatusInternalServerError,
+			Message: "failed to create session",
+			Error:   err,
+			Success: false,
+		}
+	}
+
+	return token,structs.HttpResult{
+		Code: http.StatusOK,
+		Message: "success",
+		Error:   nil,
+		Success: true,
 	}
 }

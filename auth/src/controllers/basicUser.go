@@ -29,7 +29,7 @@ func CreateBasicUser(ctx echo.Context) error {
 	}
 
 	// ユーザーを作成する
-	uid,result := services.CreateBasicUser(services.CreateBasicUserArgs{
+	token, result := services.CreateBasicUser(services.CreateBasicUserArgs{
 		Name:     args.Name,
 		Email:    args.Email,
 		Password: args.Password,
@@ -41,7 +41,7 @@ func CreateBasicUser(ctx echo.Context) error {
 		return ctx.JSON(result.Code, echo.Map{"error": result.Error.Error()})
 	}
 
-	return ctx.JSON(result.Code, echo.Map{"userid": uid})
+	return ctx.JSON(result.Code, echo.Map{"token": token})
 }
 
 type LoginBasicUserArgs struct {
@@ -64,7 +64,7 @@ func LoginBasicUser(ctx echo.Context) error {
 	}
 
 	// ユーザーをログインする
-	result := services.LoginBasicUser(services.LoginBasicUserArgs{
+	token, result := services.LoginBasicUser(services.LoginBasicUserArgs{
 		Email:    args.Email,
 		Password: args.Password,
 	})
@@ -75,5 +75,5 @@ func LoginBasicUser(ctx echo.Context) error {
 		return ctx.JSON(result.Code, echo.Map{"error": result.Error.Error()})
 	}
 
-	return ctx.JSON(result.Code, echo.Map{"message": "success"})
+	return ctx.JSON(result.Code, echo.Map{"token": token})
 }

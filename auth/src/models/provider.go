@@ -15,15 +15,14 @@ const (
 	Basic     ProviderCode = "basic"
 )
 
-// 認証プロバイダの設定テーブル
 type Provider struct {
-	ProviderName string       `gorm:"primaryKey"` // 認証プロバイダ名
-	ClientID     string       // 認証プロバイダのクライアントID
-	ClientSecret string       // 認証プロバイダのクライアントシークレット
-	CallbackURL  string       // 認証プロバイダのコールバックURL
-	ProviderCode ProviderCode `gorm:"unique"`                  // 認証プロバイダのコード
-	IsEnabled    int          `default:0`                      // 認証プロバイダの有効状態
-	Users        []User       `gorm:"foreignKey:ProviderCode;references:ProviderCode"` // 認証プロバイダに紐付けられたユーザー
+    ProviderName string       `gorm:"primaryKey"` // 認証プロバイダ名
+    ClientID     string       // 認証プロバイダのクライアントID
+    ClientSecret string       // 認証プロバイダのクライアントシークレット
+    CallbackURL  string       // 認証プロバイダのコールバックURL
+    ProviderCode ProviderCode `gorm:"type:varchar(255);uniqueIndex"` // 認証プロバイダのコード
+    IsEnabled    int          `gorm:"default:0"` // 認証プロバイダの有効状態
+    Users        []User       `gorm:"foreignKey:ProvCode;references:ProviderCode"` // プロバイダが持つユーザー
 }
 
 // プロバイダを取得
