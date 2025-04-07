@@ -48,7 +48,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("GoogleClientSecret"),
 		CallbackURL:  os.Getenv("GoogleCallback"),
 		ProviderCode: Google,
-		IsEnabled:    1,
+		IsEnabled:    0,
 		Users:        []User{},
 	})
 
@@ -64,7 +64,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("GithubClientSecret"),
 		CallbackURL:  os.Getenv("GithubCallback"),
 		ProviderCode: Github,
-		IsEnabled:    1,
+		IsEnabled:    0,
 		Users:        []User{},
 	})
 
@@ -80,7 +80,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("DiscordClientSecret"),
 		CallbackURL:  os.Getenv("DiscordCallback"),
 		ProviderCode: Discord,
-		IsEnabled:    1,
+		IsEnabled:    0,
 		Users:        []User{},
 	})
 
@@ -96,7 +96,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("LineClientSecret"),
 		CallbackURL:  os.Getenv("LineCallback"),
 		ProviderCode: Line,
-		IsEnabled:    1,
+		IsEnabled:    0,
 		Users:        []User{},
 	})
 
@@ -112,7 +112,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("MicrosoftClientSecret"),
 		CallbackURL:  os.Getenv("MicrosoftCallback"),
 		ProviderCode: Microsoft,
-		IsEnabled:    1,
+		IsEnabled:    0,
 		Users:        []User{},
 	})
 
