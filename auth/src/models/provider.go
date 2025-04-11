@@ -11,7 +11,6 @@ const (
 	Google    ProviderCode = "google"
 	Github    ProviderCode = "github"
 	Discord   ProviderCode = "discord"
-	Line      ProviderCode = "line"
 	Microsoft ProviderCode = "microsoftonline"
 	Basic     ProviderCode = "basic"
 )
@@ -48,7 +47,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("GoogleClientSecret"),
 		CallbackURL:  os.Getenv("GoogleCallback"),
 		ProviderCode: Google,
-		IsEnabled:    0,
+		IsEnabled:    1,
 		Users:        []User{},
 	})
 
@@ -80,23 +79,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("DiscordClientSecret"),
 		CallbackURL:  os.Getenv("DiscordCallback"),
 		ProviderCode: Discord,
-		IsEnabled:    0,
-		Users:        []User{},
-	})
-
-	// エラー処理
-	if err != nil {
-		logger.PrintErr(err)
-	}
-
-	// Line
-	err = CreateProvider(&Provider{
-		ProviderName: "Line",
-		ClientID:     os.Getenv("LineClientID"),
-		ClientSecret: os.Getenv("LineClientSecret"),
-		CallbackURL:  os.Getenv("LineCallback"),
-		ProviderCode: Line,
-		IsEnabled:    0,
+		IsEnabled:    1,
 		Users:        []User{},
 	})
 
