@@ -30,9 +30,9 @@ func CreateBasicUser(ctx echo.Context) error {
 
 	// ユーザーを作成する
 	token, result := services.CreateBasicUser(services.CreateBasicUserArgs{
-		Name:     args.Name,
-		Email:    args.Email,
-		Password: args.Password,
+		Name:        args.Name,
+		Email:       args.Email,
+		Password:    args.Password,
 	})
 
 	// エラー処理

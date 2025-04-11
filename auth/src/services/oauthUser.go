@@ -44,7 +44,7 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 		Name:         args.Name,
 		Email:        args.Email,
 		PasswordHash: "",
-		ProvUID:      user.UserID,
+		ProvUID:      args.ProviderUserID,
 		CreatedAt:    now,
 	}, models.ProviderCode(args.ProviderCode))
 

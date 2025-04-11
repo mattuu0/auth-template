@@ -5,6 +5,7 @@ import (
 	"auth/oauth2"
 	"auth/services"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -60,6 +61,12 @@ func CallbackOauth(ctx echo.Context) error {
 	}
 
 	logger.Println(token)
+
+	// キャッシュを無しにする
+	ctx.Response().Header().Set("Expires", time.Unix(0, 0).Format(time.RFC1123))
+	ctx.Response().Header().Set("Cache-Control", "no-cache, private, max-age=0")
+	ctx.Response().Header().Set("Pragma", "no-cache")
+	ctx.Response().Header().Set("X-Accel-Expires", "0")
 
 	if oauthResponse.IsMobile {
 		return ctx.Redirect(http.StatusFound, "authkit://?token="+token)

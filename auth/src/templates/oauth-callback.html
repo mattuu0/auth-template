@@ -70,7 +70,7 @@
         <p>メイン画面にリダイレクト中です</p>
         <div class="spinner"></div>
         <p style="display: none;" id="token">{{index . "token"}}</p>
-        <a href="/" class="redirect-button">メイン画面へ</a>
+        <a href="/statics/" class="redirect-button">メイン画面へ</a>
     </div>
 
     <script>
@@ -78,7 +78,7 @@
         localStorage.setItem('token', token);
 
         setTimeout(function() {
-            window.location.href = "/"; // メイン画面へのURLを指定
+            window.location.href = "/statics/"; // メイン画面へのURLを指定
         }, 1000); // 1秒後にリダイレクト
     </script>
 </body>
