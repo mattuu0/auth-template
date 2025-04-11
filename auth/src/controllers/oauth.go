@@ -15,8 +15,14 @@ func StartOauth(ctx echo.Context) error {
 	// oauth を更新
 	oauth2.UseProviders()
 
+	// IsMobile
+	isMobile := ctx.QueryParam("ismobile")
+
 	// 認証を開始
-	oauth2.StartOauth(ctx,provider)
+	oauth2.StartOauth(ctx, oauth2.OauthArgs{
+		ProviderName: provider,
+		IsMobile: isMobile == "1",
+	})
 
 	return nil
 }
@@ -25,7 +31,7 @@ func CallbackOauth(ctx echo.Context) error {
 	provider := ctx.Param("provider")
 
 	// oauth を完了
-	user,err := oauth2.CallbackOauth(ctx,provider)
+	oauthResponse,err := oauth2.CallbackOauth(ctx,provider)
 
 	// エラー処理
 	if err != nil {
@@ -35,6 +41,9 @@ func CallbackOauth(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
 	}
 
+	// ユーザー
+	user := oauthResponse.User
+
 	// ユーザーを作成
 	token,err := services.LoginOauthUser(services.OauthUserArgs{
 		Name:         user.Name,
@@ -43,9 +52,17 @@ func CallbackOauth(ctx echo.Context) error {
 		RemoteIP:     ctx.RealIP(),
 		UserAgent:    ctx.Request().UserAgent(),
 	})
+
+	// エラー処理
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
 
-	return ctx.JSON(http.StatusOK, echo.Map{"token": token})
+	logger.Println(token)
+
+	if oauthResponse.IsMobile {
+		return ctx.Redirect(http.StatusFound, "authkit://?token="+token)
+	}
+	// return ctx.JSON(http.StatusOK, echo.Map{"token": token})
+	return ctx.Redirect(http.StatusFound, "/auth/")
 }

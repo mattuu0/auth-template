@@ -17,6 +17,9 @@ func Init() {
 
 	// サービス初期化
 	services.Init()
+
+	// goth 初期化
+	oauth2.InitGothic()
 }
 
 func main() {
