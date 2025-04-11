@@ -6,11 +6,12 @@ import (
 )
 
 type OauthUserArgs struct {
-	Name         string // ユーザー名
-	Email        string // メールアドレス
-	ProviderCode string // 認証プロバイダコード
-	RemoteIP     string // IPアドレス
-	UserAgent    string // User-Agent
+	Name           string // ユーザー名
+	Email          string // メールアドレス
+	ProviderCode   string // 認証プロバイダコード
+	ProviderUserID string // 認証プロバイダユーザーID
+	RemoteIP       string // IPアドレス
+	UserAgent      string // User-Agent
 }
 
 // Oauthユーザーを作成する
@@ -30,8 +31,8 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 		// セッションを追加する
 		token, err := NewSession(SessionArgs{
 			UserID:    user.UserID,
-			RemoteIP:  "",
-			UserAgent: "",
+			RemoteIP:  args.RemoteIP,
+			UserAgent: args.UserAgent,
 		})
 
 		return token, err
@@ -43,6 +44,7 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 		Name:         args.Name,
 		Email:        args.Email,
 		PasswordHash: "",
+		ProvUID:      user.UserID,
 		CreatedAt:    now,
 	}, models.ProviderCode(args.ProviderCode))
 

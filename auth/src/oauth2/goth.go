@@ -178,7 +178,7 @@ func UseProviders() {
 	// エラー処理 と 有効かどうか
 	if err == nil && discordProvider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
-		providers = append(providers, discord.New(discordProvider.ClientID, discordProvider.ClientSecret, discordProvider.CallbackURL))
+		providers = append(providers, discord.New(discordProvider.ClientID, discordProvider.ClientSecret, discordProvider.CallbackURL,"email"))
 	}
 
 	// 認証プロバイダーを設定
