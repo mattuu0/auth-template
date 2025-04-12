@@ -5,6 +5,7 @@ type User struct {
 	Name         string       `gorm:"type:varchar(255)"` // ユーザー名
 	Email        string       `gorm:"type:varchar(255);uniqueIndex:idx_users_email,length:255"` // メールアドレス
 	ProvCode     ProviderCode `gorm:"type:varchar(255);index:idx_prov_code,length:255"` // 認証プロバイダコード
+	ProvUID      string       `gorm:"type:varchar(255);index:idx_prov_uid,length:255"`	// 認証プロバイダUID
 	PasswordHash string       `gorm:"default:''"`        // ハッシュ化されたパスワード
 	CreatedAt    int64        `gorm:"autoCreateTime"`    // ユーザー作成日
 	Sessions     []Session    `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"` // ユーザーが持つセッション

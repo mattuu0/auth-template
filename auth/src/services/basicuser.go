@@ -54,6 +54,7 @@ func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
 		Name:         args.Name,
 		Email:        args.Email,
 		ProvCode:     "",
+		ProvUID:      "",
 		PasswordHash: hashed,
 		CreatedAt:    now,
 	}, models.Basic)

@@ -2,6 +2,7 @@ package models
 
 import (
 	"auth/logger"
+	"os"
 )
 
 type ProviderCode string
@@ -10,7 +11,6 @@ const (
 	Google    ProviderCode = "google"
 	Github    ProviderCode = "github"
 	Discord   ProviderCode = "discord"
-	Line      ProviderCode = "line"
 	Microsoft ProviderCode = "microsoftonline"
 	Basic     ProviderCode = "basic"
 )
@@ -43,11 +43,11 @@ func InitProviders() {
 	// Google
 	err := CreateProvider(&Provider{
 		ProviderName: "Google",
-		ClientID:     "",
-		ClientSecret: "",
-		CallbackURL:  "/auth/google/callback",
+		ClientID:     os.Getenv("GoogleClientID"),
+		ClientSecret: os.Getenv("GoogleClientSecret"),
+		CallbackURL:  os.Getenv("GoogleCallback"),
 		ProviderCode: Google,
-		IsEnabled:    0,
+		IsEnabled:    1,
 		Users:        []User{},
 	})
 
@@ -59,9 +59,9 @@ func InitProviders() {
 	// GitHub
 	err = CreateProvider(&Provider{
 		ProviderName: "GitHub",
-		ClientID:     "",
-		ClientSecret: "",
-		CallbackURL:  "/auth/github/callback",
+		ClientID:     os.Getenv("GithubClientID"),
+		ClientSecret: os.Getenv("GithubClientSecret"),
+		CallbackURL:  os.Getenv("GithubCallback"),
 		ProviderCode: Github,
 		IsEnabled:    0,
 		Users:        []User{},
@@ -75,27 +75,11 @@ func InitProviders() {
 	// Discord
 	err = CreateProvider(&Provider{
 		ProviderName: "Discord",
-		ClientID:     "",
-		ClientSecret: "",
-		CallbackURL:  "/auth/discord/callback",
+		ClientID:     os.Getenv("DiscordClientID"),
+		ClientSecret: os.Getenv("DiscordClientSecret"),
+		CallbackURL:  os.Getenv("DiscordCallback"),
 		ProviderCode: Discord,
-		IsEnabled:    0,
-		Users:        []User{},
-	})
-
-	// エラー処理
-	if err != nil {
-		logger.PrintErr(err)
-	}
-
-	// Line
-	err = CreateProvider(&Provider{
-		ProviderName: "Line",
-		ClientID:     "",
-		ClientSecret: "",
-		CallbackURL:  "/auth/line/callback",
-		ProviderCode: Line,
-		IsEnabled:    0,
+		IsEnabled:    1,
 		Users:        []User{},
 	})
 
@@ -107,9 +91,9 @@ func InitProviders() {
 	// Microsoft
 	err = CreateProvider(&Provider{
 		ProviderName: "Microsoft",
-		ClientID:     "",
-		ClientSecret: "",
-		CallbackURL:  "/auth/microsoftonline/callback",
+		ClientID:     os.Getenv("MicrosoftClientID"),
+		ClientSecret: os.Getenv("MicrosoftClientSecret"),
+		CallbackURL:  os.Getenv("MicrosoftCallback"),
 		ProviderCode: Microsoft,
 		IsEnabled:    0,
 		Users:        []User{},
@@ -127,7 +111,7 @@ func InitProviders() {
 		ClientSecret: "",
 		CallbackURL:  "",
 		ProviderCode: Basic,
-		IsEnabled:    0,
+		IsEnabled:    1,
 		Users:        []User{},
 	})
 
