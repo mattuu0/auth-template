@@ -44,4 +44,11 @@ tasks:
   
   # 初回セットアップ
   setup:
-    deps: [up]
+    deps: [genkey,up]
+  
+  genkey:
+    cmds:
+      - docker run --rm -it -v ./openssl/jwtKeys:/jwtkeys -v ./nginx/keys:/sslkeys {{.Build_Image}}
+    vars:
+      Build_Image:
+        sh: docker build -q ./openssl

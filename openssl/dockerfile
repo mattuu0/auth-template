@@ -1,7 +1,10 @@
-FROM alpine/openssl:latest
+FROM alpine:latest
 
 # 作業ディレクトリを追加
 WORKDIR /sslkeys
+
+# openssl を追加
+RUN apk add openssl
 
 COPY ./genkey.sh /genkey.sh
 

@@ -11,8 +11,6 @@ services:
             - ./nginx/configs:/etc/nginx/conf.d/
             - ./nginx/keys:/etc/nginx/keys
             - ./nginx/statics:/etc/nginx/static/statics
-        depends_on:
-            - selfssl
     
     # 認証用コンテナ
     auth:
@@ -22,9 +20,13 @@ services:
             dockerfile: dockerfile
             target: Develop
         tty: true
+        env_file:
+            - ./openssl/jwtKeys/private.env
         volumes:
             - ./auth/src:/root/src
         restart: always
+        depends_on:
+            - mysql
     # データベース
     mysql:
         hostname: db
@@ -39,12 +41,5 @@ services:
         volumes:
             - dbdata:/var/lib/mysql
             - ./config/my.cnf:/etc/mysql/conf.d/my.cnf
-
-    # 自己署名用のコンテナ
-    selfssl:
-        build: ./openssl
-        volumes:
-            - ./nginx/keys:/sslKeys:delegated
-
 volumes:
     dbdata:

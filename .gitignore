@@ -4,4 +4,4 @@ nginx/keys/*
 database/data/
 .env
 
-openssl/keys/
+openssl/jwtKeys/

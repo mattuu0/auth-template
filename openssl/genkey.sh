@@ -5,6 +5,8 @@ jwtKeysDir="/jwtkeys"
 sslKeysDir="/sslkeys"
 privatePath="$jwtKeysDir/private.key"
 publicPath="$jwtKeysDir/public.key"
+privateEnvPath="$jwtKeysDir/private.env"
+publicEnvPath="$jwtKeysDir/public.env"
 serverKey="$sslKeysDir/server.key"
 serverCsr="$sslKeysDir/server.csr"
 serverCrt="$sslKeysDir/server.crt"
@@ -34,6 +36,16 @@ if [ $privateKeyCreated -eq 1 ] || [ ! -f "$publicPath" ]; then
     echo "Ed25519公開鍵の生成が完了しました"
 fi
 
+# Ed25519鍵の内容を.envファイルとして出力（末尾のバックスラッシュを削除）
+# sed 's/\\$//' を使用して末尾のバックスラッシュを削除
+key_content=$(cat "$privatePath" | tr '\n' '\\' | sed 's/\\$//' | sed 's/\\/\\n/g')
+echo "JWT_PRIVATE_KEY=\"$key_content\"" > "$privateEnvPath"
+
+key_content=$(cat "$publicPath" | tr '\n' '\\' | sed 's/\\$//' | sed 's/\\/\\n/g')
+echo "JWT_PUBLIC_KEY=\"$key_content\"" > "$publicEnvPath"
+
+echo "鍵情報を $privateEnvPath と $publicEnvPath に .env 形式で出力しました"
+
 # Ed25519鍵の内容を表示
 echo "\n===== Ed25519秘密鍵の内容 ====="
 cat "$privatePath"
@@ -43,6 +55,12 @@ cat "$publicPath"
 
 echo "\n===== Ed25519鍵の情報 ====="
 openssl pkey -in "$privatePath" -text -noout
+
+echo "\n===== .env ファイルの内容 ====="
+echo "private.env:"
+cat "$privateEnvPath"
+echo "\npublic.env:"
+cat "$publicEnvPath"
 
 # RSA鍵とX.509証明書の処理
 if [ ! -f "$serverKey" ] || [ ! -f "$serverCsr" ] || [ ! -f "$serverCrt" ]; then
