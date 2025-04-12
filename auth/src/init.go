@@ -49,6 +49,9 @@ func SetupRouter(router *echo.Echo) {
 	// 情報を取得する
 	router.GET("/me", controllers.GetMe, middlewares.RequireAuth)
 
+	// token を取得する
+	router.GET("/token", controllers.GetToken, middlewares.RequireAuth)
+
 	// ログアウト
 	router.POST("/logout",controllers.Logout,middlewares.RequireAuth)
 

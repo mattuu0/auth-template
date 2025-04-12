@@ -6,7 +6,6 @@ import (
 	"auth/services"
 	"net/http"
 
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	_ "github.com/joho/godotenv/autoload"
 )
