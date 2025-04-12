@@ -25,6 +25,7 @@ func InitGothic() {
 type OauthArgs struct {
 	ProviderName string // プロバイダー名
 	IsMobile     bool   // モバイルかどうか
+	IsPopup      bool   // パップアップかどうか
 }
 
 // 認証を開始するメソッド
@@ -70,6 +71,7 @@ func StartOauth(ctx echo.Context, args OauthArgs) error {
 type OauthResponse struct {
 	User goth.User
 	IsMobile bool
+	IsPopup bool
 }
 
 func CallbackOauth(ctx echo.Context, providerName string) (OauthResponse, error) {
@@ -103,8 +105,7 @@ func CallbackOauth(ctx echo.Context, providerName string) (OauthResponse, error)
 		return OauthResponse{}, err
 	}
 
-	logger.Println(args)
-
+	// 認証を完了
 	user, err := gothic.CompleteUserAuth(ctx.Response().Writer, request)
 
 	// エラー処理
@@ -112,7 +113,7 @@ func CallbackOauth(ctx echo.Context, providerName string) (OauthResponse, error)
 		return OauthResponse{}, err
 	}
 
-	return OauthResponse{User: user, IsMobile: args.IsMobile}, nil
+	return OauthResponse{User: user, IsMobile: args.IsMobile, IsPopup: args.IsPopup}, nil
 }
 
 // コンテキストを設定
