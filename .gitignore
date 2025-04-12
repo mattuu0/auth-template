@@ -3,3 +3,5 @@ nginx/keys/*
 **__debug_bin**
 database/data/
 .env
+
+openssl/keys/
