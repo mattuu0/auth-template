@@ -16,6 +16,28 @@ type CreateBasicUserArgs struct {
 
 // 一般ユーザーを作成する (返却値: トークン, HttpResult)
 func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
+	// プロバイダを取得
+	provider, err := models.GetProvider(models.Basic)
+
+	// エラー処理
+	if err != nil {
+		return "", structs.HttpResult{
+			Code: http.StatusInternalServerError,
+			Message: "failed to get provider",
+			Error:   err,
+			Success: false,
+		}
+	}
+
+	if provider.IsEnabled == 0 {
+		return "", structs.HttpResult{
+			Code: http.StatusUnauthorized,
+			Message: "provider is disabled",
+			Error:   errors.New("provider is disabled"),
+			Success: false,
+		}
+	}
+
 	// UUID を生成
 	uid := utils.GenID()
 
@@ -23,7 +45,7 @@ func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
 	now := utils.NowTime()
 
 	// ユーザーを取得する
-	_, err := models.GetUserByEmail(args.Email)
+	_, err = models.GetUserByEmail(args.Email)
 
 	// エラー処理
 	if err == nil {
@@ -101,6 +123,28 @@ type LoginBasicUserArgs struct {
 
 // ログインしてトークンを返す (返却値: トークン, HttpResult)
 func LoginBasicUser(args LoginBasicUserArgs) (string,structs.HttpResult) {
+	// プロバイダを取得
+	provider, err := models.GetProvider(models.Basic)
+
+	// エラー処理
+	if err != nil {
+		return "",structs.HttpResult{
+			Code: http.StatusInternalServerError,
+			Message: "failed to get provider",
+			Error:   err,
+			Success: false,
+		}
+	}
+
+	if provider.IsEnabled == 0 {
+		return "",structs.HttpResult{
+			Code: http.StatusUnauthorized,
+			Message: "provider is disabled",
+			Error:   errors.New("provider is disabled"),
+			Success: false,
+		}
+	}
+
 	// ユーザーを取得する
 	user, err := models.GetUserByEmail(args.Email)
 
