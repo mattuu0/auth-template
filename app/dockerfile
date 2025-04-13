@@ -3,6 +3,8 @@ FROM golang:1.24.1-bullseye as Develop
 # 各種ツールインストール
 RUN apt update & apt install -y curl wget git 
 
+WORKDIR /root/src
+
 # Build 
 FROM golang:1.24.1-bullseye as build
 
