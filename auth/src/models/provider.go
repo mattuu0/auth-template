@@ -111,7 +111,7 @@ func InitProviders() {
 		ClientSecret: "",
 		CallbackURL:  "",
 		ProviderCode: Basic,
-		IsEnabled:    1,
+		IsEnabled:    0,
 		Users:        []User{},
 	})
 
