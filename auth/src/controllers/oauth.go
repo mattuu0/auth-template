@@ -19,10 +19,14 @@ func StartOauth(ctx echo.Context) error {
 	// IsMobile
 	isMobile := ctx.QueryParam("ismobile")
 
+	// popup 認証かどうか
+	isPopup := ctx.QueryParam("popup")
+
 	// 認証を開始
 	oauth2.StartOauth(ctx, oauth2.OauthArgs{
 		ProviderName: provider,
 		IsMobile:     isMobile == "1",
+		IsPopup:      isPopup == "1",
 	})
 
 	return nil
@@ -72,7 +76,13 @@ func CallbackOauth(ctx echo.Context) error {
 		return ctx.Redirect(http.StatusFound, "authkit://?token="+token)
 	}
 
-	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{"token": token})
+	// popup
+	isPopup := "0"
+	if oauthResponse.IsPopup {
+		isPopup = "1"
+	}
+
+	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{"token": token,"isPopup" : isPopup})
 	// return ctx.JSON(http.StatusOK, echo.Map{"token": token})
 	// return ctx.Redirect(http.StatusFound, "/auth/")
 }

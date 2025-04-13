@@ -8,10 +8,13 @@
 <body>
     <div>
         <h1>OAuth Login</h1>
-        <a href="/auth/oauth/google">Google</a>
-        <a href="/auth/oauth/github">Github</a>
-        <a href="/auth/oauth/discord">Discord</a>
-        <a href="/auth/oauth/microsoftonline">Microsoft</a>
+        <a href="#" onclick="OauthLogin('google')">Google</a>
+        <a href="#" onclick="OauthLogin('github')">Github</a>
+        <a href="#" onclick="OauthLogin('discord')">Discord</a>
+        <a href="#" onclick="OauthLogin('microsoftonline')">Microsoft</a>
     </div>
+
+    <script src="./authkit/authkit.js"></script>
+    <script src="./scripts/login.js"></script>
 </body>
 </html>
