@@ -137,8 +137,8 @@ func UseProviders() {
 	// エラー処理 と 有効かどうか
 	if err == nil && gprovider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
-		providers = append(providers, google.New(gprovider.ClientID, gprovider.ClientSecret, gprovider.CallbackURL))
-	}
+		providers = append(providers, google.New(gprovider.ClientID, gprovider.ClientSecret, gprovider.CallbackURL,"profile","email"))
+	}	
 
 	// github
 	githubProvider, err := models.GetProvider(models.Github)
@@ -179,7 +179,7 @@ func UseProviders() {
 	// エラー処理 と 有効かどうか
 	if err == nil && discordProvider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
-		providers = append(providers, discord.New(discordProvider.ClientID, discordProvider.ClientSecret, discordProvider.CallbackURL,"email"))
+		providers = append(providers, discord.New(discordProvider.ClientID, discordProvider.ClientSecret, discordProvider.CallbackURL,"email","identify"))
 	}
 
 	// 認証プロバイダーを設定

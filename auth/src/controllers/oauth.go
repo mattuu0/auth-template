@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/markbates/goth"
 )
 
 func StartOauth(ctx echo.Context) error {
@@ -51,7 +52,7 @@ func CallbackOauth(ctx echo.Context) error {
 
 	// ユーザーを作成
 	token, err := services.LoginOauthUser(services.OauthUserArgs{
-		Name:           user.Name,
+		Name:           GetName(user),
 		Email:          user.Email,
 		ProviderCode:   provider,
 		ProviderUserID: user.UserID,
@@ -85,4 +86,32 @@ func CallbackOauth(ctx echo.Context) error {
 	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{"token": token,"isPopup" : isPopup})
 	// return ctx.JSON(http.StatusOK, echo.Map{"token": token})
 	// return ctx.Redirect(http.StatusFound, "/auth/")
+}
+
+func GetName(user goth.User) string {
+	result := ""
+
+	logger.Println(user)
+
+	if user.Name != "" {
+		return user.Name
+	}
+
+	if user.NickName != "" {
+		return user.NickName
+	}
+
+	if user.FirstName != "" {
+		result = user.FirstName
+	}
+
+	if user.LastName != "" {
+		if result != "" {
+			result += " "
+		}
+
+		result += user.LastName
+	}
+
+	return result
 }
