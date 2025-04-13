@@ -132,6 +132,30 @@ class AuthKit {
 
         return null;
     }
+    
+    async GetInfo() {
+        try {
+            // 情報を取得
+            const req = await fetch(this.baseURL + '/me', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": localStorage.getItem("token")
+                }
+            });
+
+            if (!req.ok) {
+                return null;
+            }
+
+            // 情報を取得
+            return await req.json();
+
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
 }
 
 if (typeof module !== 'undefined' && module.exports) {
