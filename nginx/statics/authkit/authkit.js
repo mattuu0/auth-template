@@ -55,6 +55,13 @@ class AuthKit {
     }
 
     async getToken() {
+        // 5分以内なら更新しない
+        if (Date.now() - window.sessionStorage.getItem("actime") < 5 * 60 * 1000) {
+            console.log("Cache Token");
+            return window.sessionStorage.getItem("actoken");
+        }
+
+        // トークンを取得
         const req = await fetch(this.baseURL + '/token', {
             method: 'GET',
             headers: {
@@ -63,8 +70,17 @@ class AuthKit {
             }
         });
 
+        // トークンを取得
         if (req.ok) {
             const data = await req.json();
+
+            console.log("Get Token");
+
+            // トークンを保存する
+            window.sessionStorage.setItem("actoken", data.token);
+            // 現在の時間を保存する
+            window.sessionStorage.setItem("actime", Date.now());
+
             return data.token;
         }
 
@@ -80,6 +96,41 @@ class AuthKit {
                 this.LoginCallback();
             }
         });
+    }
+
+    async Post(url,headers,body) {
+        // header にトークンを追加
+        headers.Authorization = await this.getToken();
+
+        // POST
+        const req = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: body
+        });
+
+        if (req.ok) {
+            return await req.json();
+        }
+
+        return null;
+    }
+
+    async Get(url,headers) {
+        // header にトークンを追加
+        headers.Authorization = await this.getToken();
+
+        // GET
+        const req = await fetch(url, {
+            method: 'GET',
+            headers: headers,
+        });
+
+        if (req.ok) {
+            return await req.json();
+        }
+
+        return null;
     }
 }
 

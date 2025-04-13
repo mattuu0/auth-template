@@ -1,11 +1,10 @@
 const auth = new AuthKit('/auth/'); 
 
 async function Init() {
-    const token = await auth.getToken(); 
+    // hello world 検証
+    const hello = await auth.Get('/app/hello',{});
 
-    if (token) {
-        console.log(token);
-    }
+    console.log(hello);
 }
 
 Init();

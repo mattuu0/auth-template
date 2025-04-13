@@ -44,7 +44,9 @@ tasks:
   
   # 初回セットアップ
   setup:
-    deps: [genkey,up]
+    cmds:
+      - task: genkey
+      - task: up
   
   genkey:
     cmds:
