@@ -35,6 +35,6 @@ func main() {
 	router.GET("/health", func(ctx echo.Context) error {
 		return ctx.String(http.StatusOK, "OK")
 	})
-	
+
 	router.Logger.Fatal(router.Start(":8080"))
 }

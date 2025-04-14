@@ -3,7 +3,6 @@ package main
 import (
 	"app/controllers"
 	"app/middlewares"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

@@ -28,8 +28,6 @@ func Init() error {
 		return err
 	}
 
-	
-
 	// グローバル変数に格納
 	dbconn = db
 
