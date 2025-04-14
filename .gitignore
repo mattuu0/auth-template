@@ -5,3 +5,5 @@ database/data/
 .env
 
 openssl/jwtKeys/
+config/auth.env
+config/app.env
