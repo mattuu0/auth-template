@@ -47,10 +47,18 @@ tasks:
     cmds:
       - task: genkey
       - task: up
+      - task: dbreset
+  restart:
+    cmds:
+      - docker compose restart auth
+      - docker compose restart app
   
   genkey:
     cmds:
-      - docker run --rm -it -v ./openssl/jwtKeys:/jwtkeys -v ./nginx/keys:/sslkeys {{.Build_Image}}
+      - cmd: docker run --rm -it -v .\\openssl\\jwtKeys:/jwtkeys -v .\\nginx\\keys:/sslkeys {{.Build_Image}}
+        platforms: [windows]
+      - cmd: docker run --rm -it -v ./openssl/jwtKeys:/jwtkeys -v ./nginx/keys:/sslkeys {{.Build_Image}}
+        platforms: [linux,darwin]
     vars:
       Build_Image:
         sh: docker build -q ./openssl
