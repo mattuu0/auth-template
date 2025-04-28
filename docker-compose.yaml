@@ -28,6 +28,18 @@ services:
         restart: always
         depends_on:
             - mysql
+    # ダッシュボード
+    dashboard:
+        hostname: dashboard
+        build:
+            context: ./dashboard
+            dockerfile: dockerfile
+            target: Develop
+        tty: true
+        volumes:
+            - ./dashboard/src:/root/src
+        restart: always
+
     # 認証用コンテナ
     app:
         hostname: app
