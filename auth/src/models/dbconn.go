@@ -1,8 +1,10 @@
 package models
 
 import (
+	"os"
+
 	"gorm.io/driver/mysql"
- 	"gorm.io/gorm"
+	"gorm.io/gorm"
 )
 
 var (
@@ -10,7 +12,7 @@ var (
 )
 
 func OpenDB() (*gorm.DB,error) {
-	dsn := "main:main@tcp(db:3306)/authdb?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := os.Getenv("DB_DSN")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	// エラー処理
