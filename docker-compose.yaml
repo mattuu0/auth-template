@@ -18,7 +18,8 @@ services:
         build:
             context: ./auth
             dockerfile: dockerfile
-            target: Release
+            # target: Release
+            target: Develop
         tty: true
         env_file:
             - ./openssl/jwtKeys/private.env
@@ -28,6 +29,7 @@ services:
         restart: always
         depends_on:
             - mysql
+            
     # ダッシュボード
     dashboard:
         hostname: dashboard

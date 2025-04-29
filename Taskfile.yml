@@ -31,7 +31,8 @@ tasks:
     env:
       DBPassword: root
     vars:
-      Database: maindb
+      # Database: maindb
+      Database: authdb
       DBContainer: mysql
     silent: true
   
