@@ -338,7 +338,7 @@ export function UserTable() {
                   {columns.find((c) => c.id === "avatar")?.visible && (
                     <TableCell>
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                        <AvatarImage src={user.avatar || "./placeholder.svg"} alt={user.name} />
                         <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
                       </Avatar>
                     </TableCell>

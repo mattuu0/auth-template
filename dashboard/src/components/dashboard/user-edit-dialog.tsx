@@ -44,7 +44,8 @@ interface UserEditDialogProps {
 }
 
 export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps) {
-  const [name, setName] = useState(user.name)
+  const [name, setName] = useState(user.name);
+  const [userAvater, setUserAvatar] = useState(user.avatar);
   const [avatar, setAvatar] = useState(user.avatar)
   const [selectedLabels, setSelectedLabels] = useState<string[]>(user.labels)
   const [previewImage, setPreviewImage] = useState<string | null>(user.avatar)

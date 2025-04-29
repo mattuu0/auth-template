@@ -58,6 +58,7 @@ func CallbackOauth(ctx echo.Context) error {
 		ProviderUserID: user.UserID,
 		RemoteIP:       ctx.RealIP(),
 		UserAgent:      ctx.Request().UserAgent(),
+		AvaterURL:      user.AvatarURL,
 	})
 
 	// エラー処理

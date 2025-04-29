@@ -12,6 +12,7 @@ type OauthUserArgs struct {
 	ProviderUserID string // 認証プロバイダユーザーID
 	RemoteIP       string // IPアドレス
 	UserAgent      string // User-Agent
+	AvaterURL      string // アバターURL
 }
 
 // Oauthユーザーを作成する
@@ -51,6 +52,17 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 	// エラー処理
 	if err != nil {
 		return "", err
+	}
+
+	// 画像を保存する (10mb まで)
+	if args.AvaterURL != "" {
+		// 画像を保存
+		err = ProcessImageFromURL(IconDir + "/" + uid + ".png", args.AvaterURL, MaxImageSize, 10)
+
+		// エラー処理
+		if err != nil {
+			return "", err
+		}
 	}
 
 	// トークンを生成

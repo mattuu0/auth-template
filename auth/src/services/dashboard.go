@@ -43,7 +43,7 @@ func GetUsers() ([]User, error) {
 			Email:      user.Email,
 			Provider:   string(user.ProvCode),
 			ProviderID: user.ProvUID,
-			Avatar:     "",
+			Avatar:     "/auth/assets/" + user.UserID + ".png",	//TODO : 本番環境ではパスを変更できるようにする
 			Labels:     labels,
 			CreatedAt:  FormatUnixTimestampToString(user.CreatedAt, time.RFC3339),
 			Banned:     user.IsBanned == 1,

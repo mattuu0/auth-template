@@ -13,8 +13,8 @@ type CreateLabelArgs struct {
 func CreateLabel(args CreateLabelArgs) error {
 	// ラベルを作成する
 	return models.CreateLabel(&models.Label{
-		Name:      args.Name,
-		Color:     args.Color,
+		Name:  args.Name,
+		Color: args.Color,
 	})
 }
 
@@ -36,7 +36,7 @@ type Label struct {
 
 func GetLabels() ([]Label, error) {
 	// ラベル一覧を取得
-	labels,err := models.GetLabels()
+	labels, err := models.GetLabels()
 
 	// エラー処理
 	if err != nil {
@@ -74,11 +74,10 @@ func DeleteLabel(args DeleteLabelArgs) error {
 	return models.DeleteLabel(label)
 }
 
-
 type LabelUpdateArgs struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Color  string `json:"color"`
 }
 
 func UpdateLabel(args LabelUpdateArgs) error {

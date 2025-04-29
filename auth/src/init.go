@@ -46,6 +46,9 @@ func SetupRouter(router *echo.Echo) {
 		basicg.POST("/login", controllers.LoginBasicUser)
 	}
 
+	// アイコンフォルダを配信する
+	router.Static("/assets", "./assets/icons")
+
 	// 情報を取得する
 	router.GET("/me", controllers.GetMe, middlewares.RequireAuth)
 

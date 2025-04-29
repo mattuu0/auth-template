@@ -60,7 +60,16 @@ func UpdateUser(args UpdateUserData) error {
 		}
 	}
 
-	return models.UpdateUser(user)
+	// ユーザーを更新
+	err = models.UpdateUser(user)
+	
+	// エラー処理
+	if err != nil {
+		return err
+	}
+
+	// 10mbまでの画像を保存
+	return ProcessAndSaveImage(IconDir + "/" + args.ID + ".png", args.Avatar, MaxImageSize)
 }
 
 // ここまで

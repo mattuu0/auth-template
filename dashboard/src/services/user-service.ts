@@ -48,6 +48,7 @@ export async function updateUser(user: Partial<User> & { id: string }): Promise<
   // 実際の実装ではAPIを呼び出してユーザーを更新
   console.log("Update user:", user)
 
+  // ユーザーを更新する
   const req = await fetch("/auth/api/user", {
     method: 'PUT',
     headers: {

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"auth/logger"
 	"auth/models"
 	"auth/services"
 	"net/http"
@@ -22,6 +23,7 @@ func GetMe(ctx echo.Context) error {
 
 	// エラー処理
 	if err != nil {
+		logger.PrintErr(err)
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
 
@@ -39,6 +41,7 @@ func UpdateUser(ctx echo.Context) error {
 
 	// ユーザーを更新する
 	if err := services.UpdateUser(args); err != nil {
+		logger.PrintErr(err)
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}	
 
