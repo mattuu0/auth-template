@@ -51,6 +51,12 @@ func (usr *User) AddLabel(labelName string) error {
 	return dbconn.Model(usr).Association("Labels").Append(label)
 }
 
+// ユーザーのラベルを全て削除する
+func (usr *User) RemoveAllLabels() error {
+	// 削除する
+	return dbconn.Model(usr).Association("Labels").Clear()
+}
+
 // ユーザーからラベルを削除する
 func (usr *User) RemoveLabel(name string) error {
 	// ラベルを取得する
@@ -83,6 +89,6 @@ func (usr *User) GetLabelNames() ([]string, error) {
 		// ラベルの名前を返す
 		labelNames = append(labelNames, label.Name)
 	}
-	
+
 	return labelNames, err
 }

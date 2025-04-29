@@ -1,6 +1,9 @@
 package services
 
-import "auth/models"
+import (
+	"auth/logger"
+	"auth/models"
+)
 
 type UserInfo struct {
 	UserID   string `json:"user_id"`
@@ -49,6 +52,14 @@ func UpdateUser(args UpdateUserData) error {
 	// ユーザーを更新する
 	user.Name = args.Name
 
+	// ラベルを削除する
+   	err = user.RemoveAllLabels()
+
+	// エラー処理
+	if err != nil {
+		return err
+	}
+
 	// ラベルを回す
 	for _, labelName := range args.Labels {
 		// ラベルを追加
@@ -69,7 +80,14 @@ func UpdateUser(args UpdateUserData) error {
 	}
 
 	// 10mbまでの画像を保存
-	return ProcessAndSaveImage(IconDir + "/" + args.ID + ".png", args.Avatar, MaxImageSize)
+	err = ProcessAndSaveImage(IconDir + "/" + args.ID + ".png", args.Avatar, MaxImageSize)
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+	}
+
+	return nil
 }
 
 // ここまで
