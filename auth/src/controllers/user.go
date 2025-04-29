@@ -27,3 +27,20 @@ func GetMe(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, user)
 }
+
+func UpdateUser(ctx echo.Context) error {
+	// リクエストボディを取得
+	args := services.UpdateUserData{}
+
+	// bind する
+	if err := ctx.Bind(&args); err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+	}
+
+	// ユーザーを更新する
+	if err := services.UpdateUser(args); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}	
+
+	return ctx.JSON(http.StatusOK, echo.Map{"message": "success"})
+}

@@ -44,11 +44,11 @@ export async function searchUsers(query: string): Promise<User[]> {
 }
 
 // ユーザーを更新
-export async function updateUser(user: Partial<User> & { id: string }): Promise<User> {
+export async function updateUser(user: Partial<User> & { id: string }): Promise<void> {
   // 実際の実装ではAPIを呼び出してユーザーを更新
   console.log("Update user:", user)
 
-  const req = await fetch("/auth/api/users", {
+  const req = await fetch("/auth/api/user", {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -56,14 +56,12 @@ export async function updateUser(user: Partial<User> & { id: string }): Promise<
     body: JSON.stringify(user),
   });
 
-  // モックデータを更新して返す
-  const index = users.findIndex((u) => u.id === user.id)
-  if (index !== -1) {
-    users[index] = { ...users[index], ...user }
-    return users[index]
+  // 結果を検証
+  if (!req.ok) {
+    throw new Error("Failed to update user")
   }
 
-  throw new Error("User not found")
+  return;
 }
 
 // ユーザーのBANステータスを切り替え
@@ -115,61 +113,3 @@ export async function clearLoginAs(): Promise<void> {
   sessionStorage.removeItem("login_as_user")
 }
 
-// // モックデータ
-// const users: User[] = [
-//   {
-//     id: "usr_123456789",
-//     name: "山田太郎",
-//     email: "yamada@example.com",
-//     provider: "google",
-//     providerId: "109876543210",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     labels: ["管理者"],
-//     createdAt: "2023-01-15",
-//     banned: false,
-//   },
-//   {
-//     id: "usr_987654321",
-//     name: "佐藤花子",
-//     email: "sato@example.com",
-//     provider: "github",
-//     providerId: "sato123",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     labels: ["一般ユーザー"],
-//     createdAt: "2023-02-20",
-//     banned: false,
-//   },
-//   {
-//     id: "usr_456789123",
-//     name: "鈴木一郎",
-//     email: "suzuki@example.com",
-//     provider: "basic",
-//     providerId: "suzuki_ichiro",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     labels: ["プレミアム"],
-//     createdAt: "2023-03-10",
-//     banned: true,
-//   },
-//   {
-//     id: "usr_789123456",
-//     name: "高橋次郎",
-//     email: "takahashi@example.com",
-//     provider: "microsoft",
-//     providerId: "takahashi_jiro",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     labels: ["一般ユーザー", "ベータテスター"],
-//     createdAt: "2023-04-05",
-//     banned: false,
-//   },
-//   {
-//     id: "usr_321654987",
-//     name: "田中三郎",
-//     email: "tanaka@example.com",
-//     provider: "discord",
-//     providerId: "tanaka#1234",
-//     avatar: "/placeholder.svg?height=40&width=40",
-//     labels: ["ベータテスター"],
-//     createdAt: "2023-05-15",
-//     banned: false,
-//   },
-// ]

@@ -28,6 +28,15 @@ func GetUsers() ([]User, error) {
 
 	userResponse := []User{}
 	for _, user := range users {
+		// ラベルを取得
+		labels,err := user.GetLabelNames()
+
+		// エラー処理
+		if err != nil {
+			return []User{}, err
+		}
+
+		// ユーザーを返す
 		userResponse = append(userResponse, User{
 			ID:         user.UserID,
 			Name:       user.Name,
@@ -35,7 +44,7 @@ func GetUsers() ([]User, error) {
 			Provider:   string(user.ProvCode),
 			ProviderID: user.ProvUID,
 			Avatar:     "",
-			Labels:     []string{},
+			Labels:     labels,
 			CreatedAt:  FormatUnixTimestampToString(user.CreatedAt, time.RFC3339),
 			Banned:     user.IsBanned == 1,
 		})

@@ -70,6 +70,9 @@ func SetupRouter(router *echo.Echo) {
 		{
 			// ユーザー一覧を取得する
 			userg.GET("/all", controllers.GetAllUsers)
+
+			// ユーザーを更新する
+			userg.PUT("", controllers.UpdateUser)
 		}
 
 		// ラベルグループを作る

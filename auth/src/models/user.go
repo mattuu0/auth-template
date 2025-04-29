@@ -70,3 +70,9 @@ func GetAllUsers() ([]User, error) {
 	err := dbconn.Find(&users).Error
 	return users, err
 }
+
+// ユーザーを更新する
+func UpdateUser(user *User) error {
+	// 更新する
+	return dbconn.Save(user).Error
+}

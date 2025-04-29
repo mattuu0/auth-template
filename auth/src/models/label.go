@@ -38,3 +38,51 @@ func UpdateLabel(label *Label) error {
 func DeleteLabel(label *Label) error {
 	return dbconn.Delete(label).Error
 }
+
+// ユーザーにラベルを追加する
+func (usr *User) AddLabel(labelName string) error {
+	// ラベルを取得する
+	label, err := GetLabel(labelName)
+	if err != nil {
+		return err
+	}
+
+	// 追加する
+	return dbconn.Model(usr).Association("Labels").Append(label)
+}
+
+// ユーザーからラベルを削除する
+func (usr *User) RemoveLabel(name string) error {
+	// ラベルを取得する
+	label, err := GetLabel(name)
+	if err != nil {
+		return err
+	}
+
+	// 削除する
+	return dbconn.Model(usr).Association("Labels").Delete(label)
+}
+
+// ラベルのリストを返す
+func (usr *User) GetLabels() ([]Label, error) {
+	// ユーザーのラベルを取得する
+	var labels []Label
+	err := dbconn.Model(usr).Association("Labels").Find(&labels)
+	return labels, err
+}
+
+//ラベルの名前リストを返す
+func (usr *User) GetLabelNames() ([]string, error) {
+	// ユーザーのラベルを取得する
+	var labels []Label
+	err := dbconn.Model(usr).Association("Labels").Find(&labels)
+
+	// ラベルの名前を返す
+	labelNames := []string{}
+	for _, label := range labels {
+		// ラベルの名前を返す
+		labelNames = append(labelNames, label.Name)
+	}
+	
+	return labelNames, err
+}
