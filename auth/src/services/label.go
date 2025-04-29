@@ -58,3 +58,38 @@ func GetLabels() ([]Label, error) {
 	// 返す
 	return returnLabels, nil
 }
+
+type DeleteLabelArgs struct {
+	ID string `json:"id"`
+}
+
+func DeleteLabel(args DeleteLabelArgs) error {
+	// ラベルを取得する
+	label, err := models.GetLabel(args.ID)
+	if err != nil {
+		return err
+	}
+
+	// ラベルを削除する
+	return models.DeleteLabel(label)
+}
+
+
+type LabelUpdateArgs struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+}
+
+func UpdateLabel(args LabelUpdateArgs) error {
+	// ラベルを取得する
+	label, err := models.GetLabel(args.ID)
+	if err != nil {
+		return err
+	}
+
+	// ラベルを更新する
+	label.Name = args.Name
+	label.Color = args.Color
+	return models.UpdateLabel(label)
+}

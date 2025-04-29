@@ -80,6 +80,12 @@ func SetupRouter(router *echo.Echo) {
 
 			// ラベルを作成する
 			labelg.POST("",controllers.CreateLabel)
+
+			// ラベルを更新する
+			labelg.PUT("",controllers.UpdateLabel)
+
+			// ラベルを削除する
+			labelg.DELETE("",controllers.DeleteLabel)
 		}
 	}
 }

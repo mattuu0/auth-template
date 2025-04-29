@@ -51,24 +51,26 @@ export async function createLabel(label: Omit<Label, "id" | "createdAt">) {
   if (!req.ok) {
     throw new Error("Failed to create label")
   }
-
-  // UI を更新
-  await getLabels();
 }
 
 // ラベルを更新
-export async function updateLabel(label: Partial<Label> & { id: string }): Promise<Label> {
+export async function updateLabel(label: Partial<Label> & { id: string }): Promise<void> {
   // 実際の実装ではAPIを呼び出してラベルを更新
-  console.log("Update label:", label)
+  console.log("Update label:", label);
 
-  // モックデータを更新して返す
-  const index = labels.findIndex((l) => l.id === label.id)
-  if (index !== -1) {
-    labels[index] = { ...labels[index], ...label }
-    return labels[index]
+  const req = await fetch("/auth/api/labels", {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(label),
+  });
+
+  if (!req.ok) {
+    throw new Error("Failed to update label")
   }
 
-  throw new Error("Label not found")
+  return;
 }
 
 // ラベルを削除
@@ -76,14 +78,21 @@ export async function deleteLabel(labelId: string): Promise<void> {
   // 実際の実装ではAPIを呼び出してラベルを削除
   console.log("Delete label:", labelId)
 
-  // モックデータから削除
-  const index = labels.findIndex((l) => l.id === labelId)
-  if (index !== -1) {
-    labels.splice(index, 1)
-    return
+  const req = await fetch("/auth/api/labels", {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      id: labelId
+    }),
+  });
+
+  if (!req.ok) {
+    throw new Error("Failed to delete label")
   }
 
-  throw new Error("Label not found")
+  return;
 }
 
 // // モックデータ
