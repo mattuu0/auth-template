@@ -61,4 +61,25 @@ func SetupRouter(router *echo.Echo) {
 		oauthg.GET("/:provider",controllers.StartOauth)
 		oauthg.GET("/:provider/callback",controllers.CallbackOauth)
 	}
+
+	// api グループ
+	apig := router.Group("/api")
+	{
+		// ユーザーのグループ作成
+		userg := apig.Group("/user")
+		{
+			// ユーザー一覧を取得する
+			userg.GET("/all", controllers.GetAllUsers)
+		}
+
+		// ラベルグループを作る
+		labelg := apig.Group("/labels")
+		{
+			// ラベルを取得する
+			labelg.GET("",controllers.GetLabels)
+
+			// ラベルを作成する
+			labelg.POST("",controllers.CreateLabel)
+		}
+	}
 }

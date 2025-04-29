@@ -34,6 +34,7 @@ func Init() error {
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Provider{})
 	db.AutoMigrate(&Session{})
+	db.AutoMigrate(&Label{})
 
 	// グローバル変数に格納
 	dbconn = db
