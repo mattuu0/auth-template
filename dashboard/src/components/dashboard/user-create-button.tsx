@@ -1,5 +1,7 @@
 "use client"
 
+import { DialogTrigger } from "@/components/ui/dialog"
+
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
@@ -9,68 +11,55 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { X, Camera, Copy, Check, Plus, Loader2 } from "lucide-react"
+import { X, Camera, Plus, Loader2 } from "lucide-react"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn, sanitizeInput } from "@/lib/utils"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { updateUser } from "@/services/user-service"
+import { createUser } from "@/services/user-service"
 import { getLabels } from "@/services/label-service"
-import { Skeleton } from "@/components/ui/skeleton"
 
-// プロバイダーの表示名マッピング
-const providerNames: Record<string, string> = {
-  google: "Google",
-  github: "GitHub",
-  microsoft: "Microsoft",
-  discord: "Discord",
-  basic: "Basic",
+interface UserCreateButtonProps {
+  onUserCreated?: () => void
 }
 
-interface UserEditDialogProps {
-  user: {
-    id: string
-    name: string
-    email: string
-    provider: string
-    providerId: string
-    avatar: string
-    labels: string[]
-    createdAt: string
-    banned: boolean
-  }
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
-
-export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps) {
-  const [name, setName] = useState(user.name)
-  const [avatar, setAvatar] = useState(user.avatar)
-  const [selectedLabels, setSelectedLabels] = useState<string[]>(user.labels)
-  const [previewImage, setPreviewImage] = useState<string | null>(user.avatar)
+export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [avatar, setAvatar] = useState("/placeholder.svg?height=40&width=40")
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([])
+  const [previewImage, setPreviewImage] = useState<string | null>("/placeholder.svg?height=40&width=40")
   const [commandOpen, setCommandOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [copied, setCopied] = useState<Record<string, boolean>>({})
   const [availableLabels, setAvailableLabels] = useState<Array<{ id: string; name: string; color: string }>>([])
   const [loadingLabels, setLoadingLabels] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [creating, setCreating] = useState(false)
 
   // ラベル一覧を取得
-  useEffect(() => {
-    const fetchLabels = async () => {
-      try {
-        setLoadingLabels(true)
-        const labels = await getLabels()
-        setAvailableLabels(labels)
-      } catch (error) {
-        console.error("ラベルの取得に失敗しました:", error)
-      } finally {
-        setLoadingLabels(false)
-      }
+  const fetchLabels = async () => {
+    try {
+      setLoadingLabels(true)
+      const labels = await getLabels()
+      setAvailableLabels(labels)
+    } catch (error) {
+      console.error("ラベルの取得に失敗しました:", error)
+    } finally {
+      setLoadingLabels(false)
     }
+  }
 
-    fetchLabels()
-  }, [])
+  useEffect(() => {
+    if (open) {
+      fetchLabels()
+    }
+  }, [open])
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen)
+    if (!newOpen) {
+      resetForm()
+    }
+  }
 
   const handleRemoveLabel = (label: string) => {
     setSelectedLabels(selectedLabels.filter((l) => l !== label))
@@ -97,14 +86,6 @@ export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps
     fileInputRef.current?.click()
   }
 
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied({ ...copied, [field]: true })
-    setTimeout(() => {
-      setCopied({ ...copied, [field]: false })
-    }, 2000)
-  }
-
   // 色に基づいてテキスト色を決定（コントラスト確保のため）
   const getTextColor = (bgColor: string) => {
     // 16進数の色コードをRGBに変換
@@ -119,32 +100,63 @@ export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps
     return yiq >= 128 ? "#000000" : "#ffffff"
   }
 
-  const handleSave = async () => {
+  const resetForm = () => {
+    setName("")
+    setEmail("")
+    setAvatar("/placeholder.svg?height=40&width=40")
+    setSelectedLabels([])
+    setPreviewImage("/placeholder.svg?height=40&width=40")
+  }
+
+  const handleCreate = async () => {
+    if (!name.trim() || !email.trim()) {
+      alert("ユーザー名とメールアドレスは必須です")
+      return
+    }
+
     try {
-      setSaving(true)
+      setCreating(true)
       // 入力値のサニタイズ
       const sanitizedName = sanitizeInput(name)
+      const sanitizedEmail = sanitizeInput(email)
 
-      // サービスを呼び出してユーザー情報を更新
-      await updateUser({
-        id: user.id,
+      // サービスを呼び出してユーザーを作成
+      await createUser({
         name: sanitizedName,
+        email: sanitizedEmail,
+        provider: "basic",
+        providerId: `basic_${Date.now()}`,
         avatar,
         labels: selectedLabels,
       })
-      onOpenChange(false)
+
+      // 成功したらフォームをリセットしてダイアログを閉じる
+      resetForm()
+      setOpen(false)
+
+      // 親コンポーネントに通知
+      if (onUserCreated) {
+        onUserCreated()
+      }
     } catch (error) {
-      console.error("ユーザー情報の更新に失敗しました:", error)
+      console.error("ユーザーの作成に失敗しました:", error)
+      alert("ユーザーの作成に失敗しました")
     } finally {
-      setSaving(false)
+      setCreating(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          ユーザー作成
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle>ユーザー編集</DialogTitle>
+          <DialogTitle>ユーザー作成</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 左側カラム */}
@@ -153,7 +165,7 @@ export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps
               <div className="relative">
                 <Avatar className="h-24 w-24">
                   <AvatarImage src={previewImage || "/placeholder.svg"} alt={name} />
-                  <AvatarFallback>{name.substring(0, 2)}</AvatarFallback>
+                  <AvatarFallback>{name.substring(0, 2) || "U"}</AvatarFallback>
                 </Avatar>
                 <Button
                   type="button"
@@ -174,45 +186,8 @@ export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="user-id">ユーザーID</Label>
-              <div className="flex">
-                <Input id="user-id" value={user.id} disabled className="rounded-r-none" />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        className="rounded-l-none"
-                        onClick={() => copyToClipboard(user.id, "id")}
-                      >
-                        {copied["id"] ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{copied["id"] ? "コピーしました" : "コピー"}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </div>
-
-            <div className="grid gap-2">
               <Label htmlFor="user-email">メールアドレス</Label>
-              <div className="flex">
-                <Input id="user-email" value={user.email} disabled className="rounded-r-none" />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        className="rounded-l-none"
-                        onClick={() => copyToClipboard(user.email, "email")}
-                      >
-                        {copied["email"] ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{copied["email"] ? "コピーしました" : "コピー"}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+              <Input id="user-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
           </div>
 
@@ -220,28 +195,7 @@ export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps
           <div className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="provider">認証プロバイダ</Label>
-              <Input id="provider" value={providerNames[user.provider]} disabled />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="provider-id">プロバイダID</Label>
-              <div className="flex">
-                <Input id="provider-id" value={user.providerId} disabled className="rounded-r-none" />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        className="rounded-l-none"
-                        onClick={() => copyToClipboard(user.providerId, "providerId")}
-                      >
-                        {copied["providerId"] ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{copied["providerId"] ? "コピーしました" : "コピー"}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+              <Input id="provider" value="Basic" disabled />
             </div>
 
             <div className="grid gap-2">
@@ -249,36 +203,36 @@ export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps
               {loadingLabels ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Skeleton className="h-6 w-16 rounded-full" />
-                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <div className="h-6 w-16 rounded-full bg-gray-200 animate-pulse"></div>
+                    <div className="h-6 w-20 rounded-full bg-gray-200 animate-pulse"></div>
                   </div>
-                  <Skeleton className="h-10 w-full" />
+                  <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
                 </div>
               ) : (
                 <>
                   <div className="flex flex-wrap gap-2 mb-2 min-h-[36px]">
-                    {selectedLabels.map((labelName) => {
-                      const labelInfo = availableLabels.find((label) => label.name === labelName)
-                      return (
+                    {selectedLabels.map((labelId) => {
+                      const labelInfo = availableLabels.find((label) => label.id === labelId)
+                      return labelInfo ? (
                         <Badge
-                          key={labelName}
+                          key={labelId}
                           className="pl-2 pr-1 py-1"
                           style={{
-                            backgroundColor: labelInfo?.color || "#6b7280",
-                            color: labelInfo?.color ? getTextColor(labelInfo.color) : "#ffffff",
+                            backgroundColor: labelInfo.color || "#6b7280",
+                            color: labelInfo.color ? getTextColor(labelInfo.color) : "#ffffff",
                           }}
                         >
-                          {labelName}
+                          {labelInfo.name}
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-4 w-4 ml-1"
-                            onClick={() => handleRemoveLabel(labelName)}
+                            onClick={() => handleRemoveLabel(labelId)}
                           >
                             <X className="h-3 w-3" />
                           </Button>
                         </Badge>
-                      )
+                      ) : null
                     })}
                   </div>
                   <Popover open={commandOpen} onOpenChange={setCommandOpen}>
@@ -295,12 +249,12 @@ export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps
                           <CommandEmpty>ラベルが見つかりません</CommandEmpty>
                           <CommandGroup>
                             {availableLabels
-                              .filter((label) => !selectedLabels.includes(label.name))
+                              .filter((label) => !selectedLabels.includes(label.id))
                               .map((label) => (
                                 <CommandItem
                                   key={label.id}
                                   onSelect={() => {
-                                    setSelectedLabels([...selectedLabels, label.name])
+                                    setSelectedLabels([...selectedLabels, label.id])
                                     setCommandOpen(false)
                                   }}
                                 >
@@ -324,25 +278,20 @@ export function UserEditDialog({ user, open, onOpenChange }: UserEditDialogProps
                 </>
               )}
             </div>
-
-            <div className="grid gap-2">
-              <Label>作成日</Label>
-              <Input value={user.createdAt} disabled />
-            </div>
           </div>
         </div>
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={creating}>
             キャンセル
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? (
+          <Button onClick={handleCreate} disabled={creating}>
+            {creating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                保存中...
+                作成中...
               </>
             ) : (
-              "保存"
+              "作成"
             )}
           </Button>
         </DialogFooter>

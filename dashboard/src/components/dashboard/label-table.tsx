@@ -7,28 +7,32 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Pencil, Search, SlidersHorizontal, Trash2 } from "lucide-react"
 import { LabelEditDialog } from "@/components/dashboard/label-edit-dialog"
+import { LabelDeleteDialog } from "@/components/dashboard/label-delete-dialog"
 import { getLabels, searchLabels, deleteLabel } from "@/services/label-service"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function LabelTable() {
   const [labels, setLabels] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [editingLabel, setEditingLabel] = useState<any | null>(null)
+  const [deletingLabel, setDeletingLabel] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // ラベルデータの取得
-  useEffect(() => {
-    const fetchLabels = async () => {
-      try {
-        setLoading(true)
-        const data = await getLabels()
-        setLabels(data)
-      } catch (error) {
-        console.error("ラベルデータの取得に失敗しました:", error)
-      } finally {
-        setLoading(false)
-      }
+  const fetchLabels = async () => {
+    try {
+      setLoading(true)
+      const data = await getLabels()
+      setLabels(data)
+    } catch (error) {
+      console.error("ラベルデータの取得に失敗しました:", error)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchLabels()
   }, [])
 
@@ -37,8 +41,7 @@ export function LabelTable() {
     const handleSearch = async () => {
       if (!searchTerm) {
         // 検索語がなければ全ラベルを取得
-        const data = await getLabels()
-        setLabels(data)
+        fetchLabels()
         return
       }
 
@@ -58,22 +61,54 @@ export function LabelTable() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
-  // ラベルの削除
-  const handleDeleteLabel = async (labelId: string) => {
+  // ラベルの削除確認ダイアログを表示
+  const handleDeleteClick = (label: any) => {
+    setDeletingLabel(label)
+  }
+
+  // ラベルの削除実行
+  const handleConfirmDelete = async () => {
+    if (!deletingLabel) return
+
     try {
+      setIsDeleting(true)
       // サービスを呼び出してラベルを削除
-      await deleteLabel(labelId)
+      await deleteLabel(deletingLabel.id)
 
       // 成功したらラベルリストを更新
-      setLabels(labels.filter((label) => label.id !== labelId))
+      await fetchLabels()
+
+      // 削除ダイアログを閉じる
+      setDeletingLabel(null)
     } catch (error) {
       console.error("ラベルの削除に失敗しました:", error)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
   // ラベルの編集
   const handleEditLabel = (label: any) => {
     setEditingLabel(label)
+  }
+
+  // ラベル編集後の更新
+  const handleLabelUpdated = () => {
+    fetchLabels()
+  }
+
+  // 色に基づいてテキスト色を決定（コントラスト確保のため）
+  const getTextColor = (bgColor: string) => {
+    // 16進数の色コードをRGBに変換
+    const r = Number.parseInt(bgColor.slice(1, 3), 16)
+    const g = Number.parseInt(bgColor.slice(3, 5), 16)
+    const b = Number.parseInt(bgColor.slice(5, 7), 16)
+
+    // 明るさを計算（YIQ方式）
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000
+
+    // 明るさに基づいてテキスト色を返す
+    return yiq >= 128 ? "#000000" : "#ffffff"
   }
 
   // レスポンシブ対応
@@ -93,6 +128,29 @@ export function LabelTable() {
     // クリーンアップ
     return () => window.removeEventListener("resize", checkIsMobile)
   }, [])
+
+  // ローディング中のスケルトン表示
+  const renderSkeletonRow = () => {
+    return (
+      <TableRow>
+        <TableCell>
+          <Skeleton className="h-5 w-32" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-5 w-24" />
+        </TableCell>
+        <TableCell>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+          </div>
+        </TableCell>
+      </TableRow>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -124,30 +182,22 @@ export function LabelTable() {
           <TableBody>
             {loading ? (
               // ローディング状態
-              Array(3)
+              Array(5)
                 .fill(0)
-                .map((_, index) => (
-                  <TableRow key={`loading-${index}`}>
-                    <TableCell>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-6 w-20 bg-gray-200 rounded animate-pulse"></div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                .map((_, index) => renderSkeletonRow())
             ) : labels.length > 0 ? (
               labels.map((label) => (
                 <TableRow key={label.id}>
                   <TableCell>{label.name}</TableCell>
                   <TableCell>
-                    <Badge className={label.color}>{label.name}</Badge>
+                    <Badge
+                      style={{
+                        backgroundColor: label.color,
+                        color: getTextColor(label.color),
+                      }}
+                    >
+                      {label.name}
+                    </Badge>
                   </TableCell>
                   <TableCell>{label.createdAt}</TableCell>
                   <TableCell>
@@ -163,7 +213,7 @@ export function LabelTable() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteLabel(label.id)}
+                        onClick={() => handleDeleteClick(label)}
                         className="text-red-500 hover:text-red-600"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -188,6 +238,17 @@ export function LabelTable() {
           label={editingLabel}
           open={!!editingLabel}
           onOpenChange={(open) => !open && setEditingLabel(null)}
+          onLabelUpdated={handleLabelUpdated}
+        />
+      )}
+
+      {deletingLabel && (
+        <LabelDeleteDialog
+          label={deletingLabel}
+          open={!!deletingLabel}
+          onOpenChange={(open) => !open && setDeletingLabel(null)}
+          onConfirm={handleConfirmDelete}
+          isDeleting={isDeleting}
         />
       )}
     </div>

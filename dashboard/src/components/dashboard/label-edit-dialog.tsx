@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { updateLabel } from "@/services/label-service"
+import { sanitizeInput } from "@/lib/utils"
+import { Loader2 } from "lucide-react"
 
 interface LabelEditDialogProps {
   label: {
@@ -17,71 +19,61 @@ interface LabelEditDialogProps {
   }
   open: boolean
   onOpenChange: (open: boolean) => void
+  onLabelUpdated?: () => void
 }
 
-export function LabelEditDialog({ label, open, onOpenChange }: LabelEditDialogProps) {
+export function LabelEditDialog({ label, open, onOpenChange, onLabelUpdated }: LabelEditDialogProps) {
   const [labelName, setLabelName] = useState(label.name)
-  const [selectedColor, setSelectedColor] = useState("#ff0000") // デフォルト色
-  const [badgeColor, setBadgeColor] = useState(label.color)
+  const [selectedColor, setSelectedColor] = useState("#ef4444") // デフォルト色
+  const [saving, setSaving] = useState(false)
 
   // 初期カラーを設定
   useEffect(() => {
-    // 既存のTailwindクラスから色を抽出してカラーピッカー用に変換
-    if (label.color.includes("red")) setSelectedColor("#ef4444")
-    else if (label.color.includes("blue")) setSelectedColor("#3b82f6")
-    else if (label.color.includes("green")) setSelectedColor("#22c55e")
-    else if (label.color.includes("purple")) setSelectedColor("#a855f7")
-    else if (label.color.includes("yellow")) setSelectedColor("#eab308")
-    else if (label.color.includes("gray")) setSelectedColor("#6b7280")
-    else if (label.color.includes("pink")) setSelectedColor("#ec4899")
-    else if (label.color.includes("indigo")) setSelectedColor("#6366f1")
+    // 既存の色コードを設定
+    setSelectedColor(label.color)
+    setLabelName(label.name)
   }, [label])
 
-  // カラーピッカーの値が変更されたときにバッジの色を更新
-  const handleColorChange = (color: string) => {
-    setSelectedColor(color)
+  // 色に基づいてテキスト色を決定（コントラスト確保のため）
+  const getTextColor = (bgColor: string) => {
+    // 16進数の色コードをRGBに変換
+    const r = Number.parseInt(bgColor.slice(1, 3), 16)
+    const g = Number.parseInt(bgColor.slice(3, 5), 16)
+    const b = Number.parseInt(bgColor.slice(5, 7), 16)
 
-    // 色からTailwindクラスを生成
-    // 実際のアプリケーションでは、より洗練された方法で色を変換するとよいでしょう
-    let newBadgeColor = ""
+    // 明るさを計算（YIQ方式）
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000
 
-    // 色に基づいて適切なTailwindクラスを選択
-    if (color.startsWith("#f") || color.startsWith("#e")) {
-      newBadgeColor = "bg-red-100 text-red-800"
-    } else if (color.startsWith("#3") || color.startsWith("#60")) {
-      newBadgeColor = "bg-blue-100 text-blue-800"
-    } else if (color.startsWith("#2") || color.startsWith("#4")) {
-      newBadgeColor = "bg-green-100 text-green-800"
-    } else if (color.startsWith("#a") || color.startsWith("#8")) {
-      newBadgeColor = "bg-purple-100 text-purple-800"
-    } else if (color.startsWith("#ea") || color.startsWith("#f")) {
-      newBadgeColor = "bg-yellow-100 text-yellow-800"
-    } else if (color.startsWith("#6") || color.startsWith("#7")) {
-      newBadgeColor = "bg-gray-100 text-gray-800"
-    } else if (color.startsWith("#ec") || color.startsWith("#d")) {
-      newBadgeColor = "bg-pink-100 text-pink-800"
-    } else {
-      newBadgeColor = "bg-indigo-100 text-indigo-800"
-    }
-
-    setBadgeColor(newBadgeColor)
+    // 明るさに基づいてテキスト色を返す
+    return yiq >= 128 ? "#000000" : "#ffffff"
   }
 
   const handleUpdateLabel = async () => {
     if (labelName.trim()) {
       try {
+        setSaving(true)
+        // 入力値のサニタイズ
+        const sanitizedName = sanitizeInput(labelName)
+
         // サービスを呼び出してラベルを更新
         await updateLabel({
           id: label.id,
-          name: labelName,
-          color: badgeColor,
+          name: sanitizedName,
+          color: selectedColor,
         })
+
+        // 親コンポーネントに通知
+        if (onLabelUpdated) {
+          onLabelUpdated()
+        }
 
         // 成功したらダイアログを閉じる
         onOpenChange(false)
       } catch (error) {
         console.error("ラベルの更新に失敗しました:", error)
         // エラー処理（実際の実装ではエラーメッセージを表示するなど）
+      } finally {
+        setSaving(false)
       }
     }
   }
@@ -109,7 +101,7 @@ export function LabelEditDialog({ label, open, onOpenChange }: LabelEditDialogPr
                 id="label-color"
                 type="color"
                 value={selectedColor}
-                onChange={(e) => handleColorChange(e.target.value)}
+                onChange={(e) => setSelectedColor(e.target.value)}
                 className="w-16 h-10 p-1 cursor-pointer"
               />
               <div className="flex-1">
@@ -120,7 +112,7 @@ export function LabelEditDialog({ label, open, onOpenChange }: LabelEditDialogPr
                       key={color}
                       className="w-6 h-6 rounded-full cursor-pointer border"
                       style={{ backgroundColor: color }}
-                      onClick={() => handleColorChange(color)}
+                      onClick={() => setSelectedColor(color)}
                     />
                   ))}
                 </div>
@@ -130,16 +122,30 @@ export function LabelEditDialog({ label, open, onOpenChange }: LabelEditDialogPr
           <div className="mt-2">
             <Label>プレビュー</Label>
             <div className="mt-1">
-              <Badge className={badgeColor}>{labelName || "ラベル名"}</Badge>
+              <Badge
+                style={{
+                  backgroundColor: selectedColor,
+                  color: getTextColor(selectedColor),
+                }}
+              >
+                {labelName || "ラベル名"}
+              </Badge>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             キャンセル
           </Button>
-          <Button onClick={handleUpdateLabel} disabled={!labelName.trim()}>
-            更新
+          <Button onClick={handleUpdateLabel} disabled={!labelName.trim() || saving}>
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                更新中...
+              </>
+            ) : (
+              "更新"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

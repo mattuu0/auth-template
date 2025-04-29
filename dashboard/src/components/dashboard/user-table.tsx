@@ -14,10 +14,13 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserEditDialog } from "@/components/dashboard/user-edit-dialog"
-import { Copy, Search, SlidersHorizontal, Ban, CheckCircle, Pencil, LogIn } from "lucide-react"
+import { Copy, Search, SlidersHorizontal, Ban, CheckCircle, Pencil, LogIn, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { getUsers, searchUsers, toggleUserBan } from "@/services/user-service"
+import { getUsers, searchUsers, toggleUserBan, loginAsUser } from "@/services/user-service"
+import { getLabels } from "@/services/label-service"
+import { useRouter } from "next/navigation"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // プロバイダーの表示名マッピング
 const providerNames: Record<string, string> = {
@@ -28,12 +31,18 @@ const providerNames: Record<string, string> = {
   basic: "Basic",
 }
 
-// ラベルの色マッピング
-const labelColors: Record<string, string> = {
-  管理者: "bg-red-100 text-red-800",
-  一般ユーザー: "bg-blue-100 text-blue-800",
-  プレミアム: "bg-purple-100 text-purple-800",
-  ベータテスター: "bg-green-100 text-green-800",
+// 色に基づいてテキスト色を決定（コントラスト確保のため）
+const getTextColor = (bgColor: string) => {
+  // 16進数の色コードをRGBに変換
+  const r = Number.parseInt(bgColor.slice(1, 3), 16)
+  const g = Number.parseInt(bgColor.slice(3, 5), 16)
+  const b = Number.parseInt(bgColor.slice(5, 7), 16)
+
+  // 明るさを計算（YIQ方式）
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000
+
+  // 明るさに基づいてテキスト色を返す
+  return yiq >= 128 ? "#000000" : "#ffffff"
 }
 
 type Column = {
@@ -43,12 +52,18 @@ type Column = {
 }
 
 export function UserTable() {
+  const router = useRouter()
   const [users, setUsers] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedProvider, setSelectedProvider] = useState<string>("")
-  const [selectedLabel, setSelectedLabel] = useState<string>("")
+  // selectedProviderとselectedLabelの初期値を"all"に設定
+  const [selectedProvider, setSelectedProvider] = useState<string>("all")
+  const [selectedLabel, setSelectedLabel] = useState<string>("all")
   const [editingUser, setEditingUser] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadingLabels, setLoadingLabels] = useState(true)
+  const [labelColors, setLabelColors] = useState<Record<string, string>>({})
+  const [availableLabels, setAvailableLabels] = useState<string[]>([])
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null)
 
   // 表示する列の設定（デフォルトでアイコンも表示）
   const [columns, setColumns] = useState<Column[]>([
@@ -63,30 +78,44 @@ export function UserTable() {
     { id: "actions", label: "操作", visible: true },
   ])
 
-  // ユーザーデータの取得
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true)
-        const data = await getUsers()
-        setUsers(data)
-      } catch (error) {
-        console.error("ユーザーデータの取得に失敗しました:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  // ユーザーデータとラベルデータの取得
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setLoadingLabels(true)
 
-    fetchUsers()
+      // ユーザーデータを取得
+      const userData = await getUsers()
+      setUsers(userData)
+
+      // ラベルデータを取得
+      const labels = await getLabels()
+
+      // ラベル名のリストを作成
+      setAvailableLabels(labels.map((label) => label.name))
+
+      // ラベル名と色のマッピングを作成
+      const colorMap: Record<string, string> = {}
+      labels.forEach((label) => {
+        colorMap[label.name] = label.color
+      })
+
+      setLabelColors(colorMap)
+    } catch (error) {
+      console.error("データの取得に失敗しました:", error)
+    } finally {
+      setLoading(false)
+      setLoadingLabels(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
   }, [])
 
   // 検索処理
   useEffect(() => {
     const handleSearch = async () => {
-      console.log(searchTerm);
-      console.log(selectedProvider);
-      console.log(selectedLabel);
-
       if (!searchTerm && !selectedProvider && !selectedLabel) {
         // フィルターがなければ全ユーザーを取得
         const data = await getUsers()
@@ -100,16 +129,8 @@ export function UserTable() {
 
         // クライアント側でさらにフィルタリング
         const filtered = data.filter((user) => {
-          let matchesProvider = false;
-          if (user.provider === selectedProvider || selectedProvider == "all") {
-            matchesProvider = true;
-          }
-
-          let matchesLabel = false;
-          if (user.labels.includes(selectedLabel) || selectedLabel == "all") {
-            matchesLabel = true;
-          }
-
+          const matchesProvider = selectedProvider === "all" ? true : user.provider === selectedProvider
+          const matchesLabel = selectedLabel === "all" ? true : user.labels.includes(selectedLabel)
           return matchesProvider && matchesLabel
         })
 
@@ -139,6 +160,7 @@ export function UserTable() {
   // BANステータスの切り替え
   const handleToggleBan = async (userId: string) => {
     try {
+      setActionInProgress(userId + "_ban")
       // サービスを呼び出してBANステータスを切り替え
       const updatedUser = await toggleUserBan(userId)
 
@@ -146,22 +168,30 @@ export function UserTable() {
       setUsers(users.map((user) => (user.id === userId ? { ...user, banned: updatedUser.banned } : user)))
     } catch (error) {
       console.error("BANステータスの切り替えに失敗しました:", error)
+    } finally {
+      setActionInProgress(null)
     }
   }
 
   // ユーザーとしてログイン
-  const loginAsUser = async (userId: string) => {
+  const handleLoginAsUser = async (userId: string) => {
     try {
+      setActionInProgress(userId + "_login")
       // サービスを呼び出してユーザーとしてログイン
-      // 実際の実装ではサービス関数を呼び出す
-      console.log(`Login as user: ${userId}`)
-      // 例: await loginAs(userId)
+      await loginAsUser(userId)
 
-      // 成功したらリダイレクトなど
-      // window.location.href = '/dashboard'
+      // ページをリロードして変更を反映
+      router.refresh()
     } catch (error) {
       console.error("ユーザーとしてのログインに失敗しました:", error)
+    } finally {
+      setActionInProgress(null)
     }
+  }
+
+  // ユーザー編集後の更新
+  const handleUserUpdated = () => {
+    fetchData()
   }
 
   // レスポンシブ対応
@@ -181,6 +211,36 @@ export function UserTable() {
     // クリーンアップ
     return () => window.removeEventListener("resize", checkIsMobile)
   }, [])
+
+  // ローディング中のスケルトン表示
+  const renderSkeletonRow = () => {
+    return (
+      <TableRow>
+        {columns
+          .filter((c) => c.visible)
+          .map((column, index) => (
+            <TableCell key={`skeleton-${index}`}>
+              {column.id === "avatar" ? (
+                <Skeleton className="h-8 w-8 rounded-full" />
+              ) : column.id === "labels" ? (
+                <div className="flex gap-1">
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-6 w-12 rounded-full" />
+                </div>
+              ) : column.id === "actions" ? (
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                </div>
+              ) : (
+                <Skeleton className="h-5 w-full" />
+              )}
+            </TableCell>
+          ))}
+      </TableRow>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -211,18 +271,23 @@ export function UserTable() {
             </Select>
           </div>
           <div className={isMobile ? "w-full" : "w-40"}>
-            <Select value={selectedLabel} onValueChange={setSelectedLabel}>
-              <SelectTrigger>
-                <SelectValue placeholder="ラベル" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="管理者">管理者</SelectItem>
-                <SelectItem value="一般ユーザー">一般ユーザー</SelectItem>
-                <SelectItem value="プレミアム">プレミアム</SelectItem>
-                <SelectItem value="ベータテスター">ベータテスター</SelectItem>
-              </SelectContent>
-            </Select>
+            {loadingLabels ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Select value={selectedLabel} onValueChange={setSelectedLabel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="ラベル" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">すべて</SelectItem>
+                  {availableLabels.map((label) => (
+                    <SelectItem key={label} value={label}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -266,17 +331,7 @@ export function UserTable() {
               // ローディング状態
               Array(5)
                 .fill(0)
-                .map((_, index) => (
-                  <TableRow key={`loading-${index}`}>
-                    {columns
-                      .filter((c) => c.visible)
-                      .map((column, colIndex) => (
-                        <TableCell key={`loading-cell-${colIndex}`}>
-                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                        </TableCell>
-                      ))}
-                  </TableRow>
-                ))
+                .map((_, index) => renderSkeletonRow())
             ) : users.length > 0 ? (
               users.map((user) => (
                 <TableRow key={user.id}>
@@ -327,7 +382,13 @@ export function UserTable() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {user.labels.map((label: string) => (
-                          <Badge key={label} className={labelColors[label] || "bg-gray-100 text-gray-800"}>
+                          <Badge
+                            key={label}
+                            style={{
+                              backgroundColor: labelColors[label] || "#6b7280",
+                              color: labelColors[label] ? getTextColor(labelColors[label]) : "#ffffff",
+                            }}
+                          >
                             {label}
                           </Badge>
                         ))}
@@ -350,8 +411,15 @@ export function UserTable() {
                                     ? "text-red-500 hover:text-red-600"
                                     : "text-green-500 hover:text-green-600"
                                 }
+                                disabled={actionInProgress === user.id + "_ban"}
                               >
-                                {user.banned ? <Ban className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                                {actionInProgress === user.id + "_ban" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : user.banned ? (
+                                  <Ban className="h-4 w-4" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4" />
+                                )}
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>{user.banned ? "BANを解除" : "BANする"}</TooltipContent>
@@ -380,10 +448,15 @@ export function UserTable() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => loginAsUser(user.id)}
+                                onClick={() => handleLoginAsUser(user.id)}
                                 className="text-purple-500 hover:text-purple-600"
+                                disabled={actionInProgress === user.id + "_login"}
                               >
-                                <LogIn className="h-4 w-4" />
+                                {actionInProgress === user.id + "_login" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <LogIn className="h-4 w-4" />
+                                )}
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>このユーザーとしてログイン</TooltipContent>
@@ -409,7 +482,13 @@ export function UserTable() {
         <UserEditDialog
           user={editingUser}
           open={!!editingUser}
-          onOpenChange={(open) => !open && setEditingUser(null)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingUser(null)
+              // ユーザー編集後にデータを更新
+              handleUserUpdated()
+            }
+          }}
         />
       )}
     </div>

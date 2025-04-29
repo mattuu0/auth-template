@@ -5,37 +5,63 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus } from "lucide-react"
+import { Plus, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { createLabel } from "@/services/label-service"
+import { sanitizeInput } from "@/lib/utils"
 
-// 利用可能な色のリスト
-const colorOptions = [
-  { name: "赤", value: "bg-red-100 text-red-800" },
-  { name: "青", value: "bg-blue-100 text-blue-800" },
-  { name: "緑", value: "bg-green-100 text-green-800" },
-  { name: "紫", value: "bg-purple-100 text-purple-800" },
-  { name: "黄", value: "bg-yellow-100 text-yellow-800" },
-  { name: "灰色", value: "bg-gray-100 text-gray-800" },
-  { name: "ピンク", value: "bg-pink-100 text-pink-800" },
-  { name: "インディゴ", value: "bg-indigo-100 text-indigo-800" },
-]
+interface LabelCreateButtonProps {
+  onLabelCreated?: () => void
+}
 
-export function LabelCreateButton() {
+export function LabelCreateButton({ onLabelCreated }: LabelCreateButtonProps) {
   const [open, setOpen] = useState(false)
   const [labelName, setLabelName] = useState("")
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0].value)
+  const [selectedColor, setSelectedColor] = useState("#ef4444") // デフォルト色を赤に設定
+  const [creating, setCreating] = useState(false)
 
-  const handleCreateLabel = () => {
+  const handleCreateLabel = async () => {
     if (labelName.trim()) {
-      // 実際の実装ではサービスを呼び出してラベルを作成
-      console.log("Create label:", {
-        name: labelName,
-        color: selectedColor,
-      })
-      setLabelName("")
-      setSelectedColor(colorOptions[0].value)
-      setOpen(false)
+      try {
+        setCreating(true)
+        // 入力値のサニタイズ
+        const sanitizedName = sanitizeInput(labelName)
+
+        // サービスを呼び出してラベルを作成
+        await createLabel({
+          name: sanitizedName,
+          color: selectedColor,
+        })
+
+        // 成功したらフォームをリセットしてダイアログを閉じる
+        setLabelName("")
+        setSelectedColor("#ef4444")
+        setOpen(false)
+
+        // 親コンポーネントに通知
+        if (onLabelCreated) {
+          onLabelCreated()
+        }
+      } catch (error) {
+        console.error("ラベルの作成に失敗しました:", error)
+      } finally {
+        setCreating(false)
+      }
     }
+  }
+
+  // 色に基づいてテキスト色を決定（コントラスト確保のため）
+  const getTextColor = (bgColor: string) => {
+    // 16進数の色コードをRGBに変換
+    const r = Number.parseInt(bgColor.slice(1, 3), 16)
+    const g = Number.parseInt(bgColor.slice(3, 5), 16)
+    const b = Number.parseInt(bgColor.slice(5, 7), 16)
+
+    // 明るさを計算（YIQ方式）
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000
+
+    // 明るさに基づいてテキスト色を返す
+    return yiq >= 128 ? "#000000" : "#ffffff"
   }
 
   return (
@@ -61,34 +87,57 @@ export function LabelCreateButton() {
               />
             </div>
             <div className="grid gap-2">
-              <Label>ラベル色</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {colorOptions.map((color) => (
-                  <div
-                    key={color.value}
-                    className={`cursor-pointer rounded-md border p-2 ${
-                      selectedColor === color.value ? "ring-2 ring-blue-500" : ""
-                    }`}
-                    onClick={() => setSelectedColor(color.value)}
-                  >
-                    <Badge className={color.value}>{color.name}</Badge>
+              <Label htmlFor="label-color">ラベル色</Label>
+              <div className="flex items-center gap-4">
+                <Input
+                  id="label-color"
+                  type="color"
+                  value={selectedColor}
+                  onChange={(e) => setSelectedColor(e.target.value)}
+                  className="w-16 h-10 p-1 cursor-pointer"
+                />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-1">色を選択してください</p>
+                  <div className="flex gap-2">
+                    {["#ef4444", "#3b82f6", "#22c55e", "#a855f7", "#eab308", "#6b7280"].map((color) => (
+                      <div
+                        key={color}
+                        className="w-6 h-6 rounded-full cursor-pointer border"
+                        style={{ backgroundColor: color }}
+                        onClick={() => setSelectedColor(color)}
+                      />
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
             <div className="mt-2">
               <Label>プレビュー</Label>
               <div className="mt-1">
-                <Badge className={selectedColor}>{labelName || "ラベル名"}</Badge>
+                <Badge
+                  style={{
+                    backgroundColor: selectedColor,
+                    color: getTextColor(selectedColor),
+                  }}
+                >
+                  {labelName || "ラベル名"}
+                </Badge>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={creating}>
               キャンセル
             </Button>
-            <Button onClick={handleCreateLabel} disabled={!labelName.trim()}>
-              作成
+            <Button onClick={handleCreateLabel} disabled={!labelName.trim() || creating}>
+              {creating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  作成中...
+                </>
+              ) : (
+                "作成"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

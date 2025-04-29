@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { LogOut, Users, Tag, Settings } from "lucide-react"
-import { logout } from "@/services/auth-service"
+import { logout, getCurrentUser } from "@/services/auth-service"
+import { getCurrentLoginAs, clearLoginAs } from "@/services/user-service"
 
 const navItems = [
   {
@@ -32,6 +33,25 @@ export function Sidebar() {
   const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [loginAsUser, setLoginAsUser] = useState<any>(null)
+
+  // 現在のユーザー情報とログイン中のユーザー情報を取得
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const user = await getCurrentUser()
+        setCurrentUser(user)
+
+        const loginAs = await getCurrentLoginAs()
+        setLoginAsUser(loginAs)
+      } catch (error) {
+        console.error("ユーザー情報の取得に失敗しました:", error)
+      }
+    }
+
+    fetchUserInfo()
+  }, [])
 
   // 画面サイズに応じてモバイル表示を切り替え
   useEffect(() => {
@@ -62,17 +82,34 @@ export function Sidebar() {
     }
   }
 
+  // ログイン中のユーザーをクリア
+  const handleClearLoginAs = async () => {
+    try {
+      await clearLoginAs()
+      setLoginAsUser(null)
+      // 現在のページをリロード
+      router.refresh()
+    } catch (error) {
+      console.error("ログイン中のユーザーのクリアに失敗しました:", error)
+    }
+  }
+
   return (
     <TooltipProvider>
       <div
         className={cn(
-          "flex h-full flex-col border-r bg-white shadow-sm transition-all duration-300",
+          "flex h-full flex-col border-r bg-white shadow-sm transition-width duration-300 ease-in-out",
           isCollapsed ? "w-14" : "w-52", // 横幅を縮小
         )}
       >
         <div className="flex h-14 items-center border-b px-3">
-          <h1 className={cn("font-semibold transition-opacity text-sm", isCollapsed ? "opacity-0 w-0" : "opacity-100")}>
-            認証基盤管理
+          <h1
+            className={cn(
+              "font-semibold text-sm transition-opacity duration-200",
+              isCollapsed ? "opacity-0 w-0 invisible" : "opacity-100 visible",
+            )}
+          >
+            authkit
           </h1>
           <Button
             variant="ghost"
@@ -91,7 +128,7 @@ export function Sidebar() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={cn("transition-transform", isCollapsed ? "rotate-180" : "")}
+              className={cn("transition-transform duration-200", isCollapsed ? "rotate-180" : "")}
             >
               <path d="m15 6-6 6 6 6" />
             </svg>
@@ -115,8 +152,8 @@ export function Sidebar() {
                         <item.icon className={cn("h-5 w-5", isActive ? "text-blue-700" : "text-gray-500")} />
                         <span
                           className={cn(
-                            "ml-3 transition-opacity text-sm",
-                            isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100",
+                            "ml-3 text-sm transition-opacity duration-200",
+                            isCollapsed ? "opacity-0 w-0 invisible" : "opacity-100 visible",
                           )}
                         >
                           {item.title}
@@ -130,7 +167,40 @@ export function Sidebar() {
             })}
           </ul>
         </nav>
-        <div className="mt-auto border-t p-2">
+
+        {/* ログイン中のユーザー情報 */}
+        {loginAsUser && (
+          <div className="border-t p-2">
+            <div
+              className={cn(
+                "text-xs text-amber-600 bg-amber-50 rounded p-2 mb-2 flex items-center justify-between",
+                isCollapsed ? "hidden" : "",
+              )}
+            >
+              <span>{loginAsUser.name}としてログイン中</span>
+              <Button variant="ghost" size="sm" className="h-6 px-2" onClick={handleClearLoginAs}>
+                解除
+              </Button>
+            </div>
+            {isCollapsed && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="w-full h-8 mb-2 bg-amber-50 text-amber-600 border-amber-200"
+                    onClick={handleClearLoginAs}
+                  >
+                    <Users className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">{loginAsUser.name}としてログイン中（解除）</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        )}
+
+        <div className="border-t p-2">
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <Button
@@ -142,7 +212,12 @@ export function Sidebar() {
                 onClick={handleLogout}
               >
                 <LogOut className="h-5 w-5" />
-                <span className={cn("ml-3 transition-opacity", isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
+                <span
+                  className={cn(
+                    "ml-3 transition-opacity duration-200",
+                    isCollapsed ? "opacity-0 w-0 invisible" : "opacity-100 visible",
+                  )}
+                >
                   ログアウト
                 </span>
               </Button>

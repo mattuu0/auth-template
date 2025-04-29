@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Loader2 } from "lucide-react"
-import { signup } from "@/services/auth-service"
+import { signup, checkAdminExists } from "@/services/auth-service"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -20,6 +20,29 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true)
+
+  // 管理者が既に存在するかチェック
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        setIsCheckingAdmin(true)
+        const adminExists = await checkAdminExists()
+
+        // 管理者が既に存在する場合はログインページにリダイレクト
+        if (adminExists) {
+          router.push("/login?adminExists=true")
+        }
+      } catch (err) {
+        console.error("管理者チェックに失敗しました:", err)
+        setError("システムエラーが発生しました。しばらく経ってからお試しください。")
+      } finally {
+        setIsCheckingAdmin(false)
+      }
+    }
+
+    checkAdmin()
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,6 +68,18 @@ export default function SignupPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // 管理者チェック中はローディング表示
+  if (isCheckingAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600">管理者情報を確認中...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

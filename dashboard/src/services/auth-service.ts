@@ -7,6 +7,23 @@ export interface AuthUser {
   role: string
 }
 
+// 管理者が存在するかチェック
+export async function checkAdminExists(): Promise<boolean> {
+  // 実際の実装ではAPIを呼び出して管理者の存在を確認
+  console.log("Checking if admin exists")
+
+  // モックの実装（実際の実装では削除）
+  // セッションストレージから管理者の存在を確認
+  const adminExistsFlag = sessionStorage.getItem("admin_exists")
+
+  // 初回アクセス時は管理者が存在しないと仮定
+  if (adminExistsFlag === null) {
+    return false
+  }
+
+  return adminExistsFlag === "true"
+}
+
 // ログイン処理
 export async function login(email: string, password: string): Promise<AuthUser> {
   // 実際の実装ではAPIを呼び出して認証を行う
@@ -19,6 +36,9 @@ export async function login(email: string, password: string): Promise<AuthUser> 
       email: "admin@example.com",
       role: "admin",
     }
+
+    // 管理者が存在することをマーク
+    sessionStorage.setItem("admin_exists", "true")
 
     // ユーザー情報をセッションに保存
     sessionStorage.setItem("auth_user", JSON.stringify(user))
@@ -46,6 +66,9 @@ export async function signup(email: string, password: string): Promise<AuthUser>
     email,
     role: "admin",
   }
+
+  // 管理者が存在することをマーク
+  sessionStorage.setItem("admin_exists", "true")
 
   // 成功したらユーザー情報を返す（実際の実装ではAPIからのレスポンスを返す）
   return user
