@@ -47,3 +47,17 @@ func UpdateUser(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, echo.Map{"message": "success"})
 }
+
+
+func GetAllUsers(ctx echo.Context) (error) {
+	// サービスを呼び出す
+	users, err := services.GetUsers()
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+
+	return ctx.JSON(http.StatusOK, users)
+}
