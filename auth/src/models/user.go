@@ -10,7 +10,8 @@ type User struct {
 	CreatedAt    int64        `gorm:"autoCreateTime"`                                           // ユーザー作成日
 	Sessions     []Session    `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`            // ユーザーが持つセッション
 	IsBanned     int          `gorm:"default:0"`                                                // ユーザーの禁止状態
-	Labels       []Label      `gorm:"many2many:user_labels;constraint:OnDelete:CASCADE"`                                   // ユーザーのラベル
+	Labels       []Label      `gorm:"many2many:user_labels;constraint:OnDelete:CASCADE"`        // ユーザーのラベル
+	UpdatedAt    int64        `gorm:"autoUpdateTime"`                                           // ユーザー更新日
 }
 
 func CreateUser(user *User, ProviderCode ProviderCode) error {
