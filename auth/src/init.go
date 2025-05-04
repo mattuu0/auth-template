@@ -78,6 +78,16 @@ func SetupRouter(router *echo.Echo) {
 			userg.PUT("", controllers.UpdateUser)
 		}
 
+		// プロバイダグループ
+		providerg := apig.Group("/providers")
+		{
+			// プロバイダー一覧を取得する
+			providerg.GET("", controllers.GetProviders)
+
+			// プロバイダー一覧を更新する
+			providerg.POST("", controllers.UpdateProviders)
+		}
+
 		// ラベルグループを作る
 		labelg := apig.Group("/labels")
 		{

@@ -74,6 +74,7 @@ func CallbackOauth(ctx echo.Context) error {
 	ctx.Response().Header().Set("Pragma", "no-cache")
 	ctx.Response().Header().Set("X-Accel-Expires", "0")
 
+	// モバイル場合
 	if oauthResponse.IsMobile {
 		return ctx.Redirect(http.StatusFound, "authkit://?token="+token)
 	}

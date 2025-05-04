@@ -25,9 +25,9 @@ func GetMe(userid string) (UserInfo, error) {
 	}
 
 	return UserInfo{
-		UserID: user.UserID,
-		Name:   user.Name,
-		Email:  user.Email,
+		UserID:   user.UserID,
+		Name:     user.Name,
+		Email:    user.Email,
 		ProvCode: string(user.ProvCode),
 		ProvUid:  user.ProvUID,
 	}, nil
@@ -55,7 +55,7 @@ func UpdateUser(args UpdateUserData) error {
 	user.Name = args.Name
 
 	// ラベルを削除する
-   	err = user.RemoveAllLabels()
+	err = user.RemoveAllLabels()
 
 	// エラー処理
 	if err != nil {
@@ -75,14 +75,14 @@ func UpdateUser(args UpdateUserData) error {
 
 	// ユーザーを更新
 	err = models.UpdateUser(user)
-	
+
 	// エラー処理
 	if err != nil {
 		return err
 	}
 
 	// 10mbまでの画像を保存
-	err = ProcessAndSaveImage(IconDir + "/" + args.ID + ".png", args.Avatar, MaxImageSize)
+	err = ProcessAndSaveImage(IconDir+"/"+args.ID+".png", args.Avatar, MaxImageSize)
 
 	// エラー処理
 	if err != nil {
@@ -119,7 +119,7 @@ func GetUsers() ([]User, error) {
 	userResponse := []User{}
 	for _, user := range users {
 		// ラベルを取得
-		labels,err := user.GetLabelNames()
+		labels, err := user.GetLabelNames()
 
 		// エラー処理
 		if err != nil {
@@ -133,7 +133,7 @@ func GetUsers() ([]User, error) {
 			Email:      user.Email,
 			Provider:   string(user.ProvCode),
 			ProviderID: user.ProvUID,
-			Avatar:     "/auth/assets/" + user.UserID + ".png?uptime=" + strconv.FormatInt(user.UpdatedAt, 10),	//TODO : 本番環境ではパスを変更できるようにする
+			Avatar:     "/auth/assets/" + user.UserID + ".png?uptime=" + strconv.FormatInt(user.UpdatedAt, 10), //TODO : 本番環境ではパスを変更できるようにする
 			Labels:     labels,
 			CreatedAt:  FormatUnixTimestampToString(user.CreatedAt, time.RFC3339),
 			Banned:     user.IsBanned == 1,
