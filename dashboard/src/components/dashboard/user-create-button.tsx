@@ -11,12 +11,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { X, Camera, Plus, Loader2 } from "lucide-react"
+import { X, Camera, Plus, Loader2, AlertCircle, Eye, EyeOff, RefreshCw } from "lucide-react"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn, sanitizeInput } from "@/lib/utils"
 import { createUser } from "@/services/user-service"
 import { getLabels } from "@/services/label-service"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface UserCreateButtonProps {
   onUserCreated?: () => void
@@ -26,6 +27,9 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [userId, setUserId] = useState(`usr_${Math.random().toString(36).substring(2, 8)}`)
   const [avatar, setAvatar] = useState("/placeholder.svg?height=40&width=40")
   const [selectedLabels, setSelectedLabels] = useState<string[]>([])
   const [previewImage, setPreviewImage] = useState<string | null>("/placeholder.svg?height=40&width=40")
@@ -34,6 +38,14 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
   const [availableLabels, setAvailableLabels] = useState<Array<{ id: string; name: string; color: string }>>([])
   const [loadingLabels, setLoadingLabels] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  // ランダムなユーザーIDを生成
+  const generateRandomUserId = () => {
+    setUserId(`usr_${Math.random().toString(36).substring(2, 8)}`)
+  }
 
   // ラベル一覧を取得
   const fetchLabels = async () => {
@@ -51,6 +63,7 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
   useEffect(() => {
     if (open) {
       fetchLabels()
+      generateRandomUserId() // モーダルを開いたときに新しいIDを生成
     }
   }, [open])
 
@@ -103,14 +116,54 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
   const resetForm = () => {
     setName("")
     setEmail("")
+    setPassword("")
+    setConfirmPassword("")
     setAvatar("/placeholder.svg?height=40&width=40")
     setSelectedLabels([])
     setPreviewImage("/placeholder.svg?height=40&width=40")
+    setError(null)
+  }
+
+  const validateForm = () => {
+    if (!name.trim()) {
+      setError("ユーザー名を入力してください")
+      return false
+    }
+
+    if (!email.trim()) {
+      setError("メールアドレスを入力してください")
+      return false
+    }
+
+    // メールアドレスの簡易バリデーション
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError("有効なメールアドレスを入力してください")
+      return false
+    }
+
+    if (!password) {
+      setError("パスワードを入力してください")
+      return false
+    }
+
+    if (password.length < 8) {
+      setError("パスワードは8文字以上で入力してください")
+      return false
+    }
+
+    if (password !== confirmPassword) {
+      setError("パスワードと確認用パスワードが一致しません")
+      return false
+    }
+
+    return true
   }
 
   const handleCreate = async () => {
-    if (!name.trim() || !email.trim()) {
-      alert("ユーザー名とメールアドレスは必須です")
+    setError(null)
+
+    if (!validateForm()) {
       return
     }
 
@@ -122,8 +175,10 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
 
       // サービスを呼び出してユーザーを作成
       await createUser({
+        id: userId, // 生成したIDを使用
         name: sanitizedName,
         email: sanitizedEmail,
+        password: password,
         provider: "basic",
         providerId: `basic_${Date.now()}`,
         avatar,
@@ -140,7 +195,7 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
       }
     } catch (error) {
       console.error("ユーザーの作成に失敗しました:", error)
-      alert("ユーザーの作成に失敗しました")
+      setError("ユーザーの作成に失敗しました")
     } finally {
       setCreating(false)
     }
@@ -149,7 +204,7 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="bg-blue-600 hover:bg-blue-700">
           <Plus className="mr-2 h-4 w-4" />
           ユーザー作成
         </Button>
@@ -158,6 +213,14 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
         <DialogHeader>
           <DialogTitle>ユーザー作成</DialogTitle>
         </DialogHeader>
+
+        {error && (
+          <Alert variant="destructive" className="mt-2">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 左側カラム */}
           <div className="space-y-4">
@@ -181,24 +244,96 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
             </div>
 
             <div className="grid gap-2">
+              <Label htmlFor="user-id">ユーザーID</Label>
+              <div className="flex">
+                <Input id="user-id" value={userId} readOnly className="rounded-r-none font-mono text-sm" />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="rounded-l-none"
+                  onClick={generateRandomUserId}
+                  title="新しいIDを生成"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">ユーザーIDはシステム内で一意の識別子です</p>
+            </div>
+
+            <div className="grid gap-2">
               <Label htmlFor="user-name">ユーザー名</Label>
-              <Input id="user-name" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input
+                id="user-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="ユーザー名を入力"
+                required
+              />
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="user-email">メールアドレス</Label>
-              <Input id="user-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
+                id="user-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@mail.com"
+                required
+              />
             </div>
           </div>
 
           {/* 右側カラム */}
           <div className="space-y-4">
             <div className="grid gap-2">
-              <Label htmlFor="provider">認証プロバイダ</Label>
-              <Input id="provider" value="Basic" disabled />
+              <Label htmlFor="user-password">パスワード</Label>
+              <div className="relative">
+                <Input
+                  id="user-password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="パスワードを入力"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">8文字以上で入力してください</p>
             </div>
 
             <div className="grid gap-2">
+              <Label htmlFor="user-confirm-password">パスワード（確認）</Label>
+              <div className="relative">
+                <Input
+                  id="user-confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="パスワードを再入力"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-2 mt-4">
               <Label>ラベル</Label>
               {loadingLabels ? (
                 <div className="space-y-2">
@@ -284,14 +419,14 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
           <Button variant="outline" onClick={() => setOpen(false)} disabled={creating}>
             キャンセル
           </Button>
-          <Button onClick={handleCreate} disabled={creating}>
+          <Button onClick={handleCreate} disabled={creating} className="bg-blue-600 hover:bg-blue-700">
             {creating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 作成中...
               </>
             ) : (
-              "作成"
+              "ユーザーを作成"
             )}
           </Button>
         </DialogFooter>

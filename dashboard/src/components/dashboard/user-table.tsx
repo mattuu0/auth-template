@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserEditDialog } from "@/components/dashboard/user-edit-dialog"
-import { Copy, Search, SlidersHorizontal, Ban, CheckCircle, Pencil, LogIn, Loader2 } from "lucide-react"
+import { Copy, Search, SlidersHorizontal, Ban, CheckCircle, Pencil, LogIn, Loader2, History } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { getUsers, searchUsers, toggleUserBan, loginAsUser } from "@/services/user-service"
@@ -189,6 +189,11 @@ export function UserTable() {
     }
   }
 
+  // セッション一覧ページに移動
+  const navigateToSessions = (userId: string) => {
+    router.push(`/dashboard/sessions?userId=${userId}`)
+  }
+
   // ユーザー編集後の更新
   const handleUserUpdated = () => {
     fetchData()
@@ -213,13 +218,13 @@ export function UserTable() {
   }, [])
 
   // ローディング中のスケルトン表示
-  const renderSkeletonRow = () => {
+  const renderSkeletonRow = (index: number) => {
     return (
-      <TableRow>
+      <TableRow key={`skeleton-row-${index}`}>
         {columns
           .filter((c) => c.visible)
-          .map((column, index) => (
-            <TableCell key={`skeleton-${index}`}>
+          .map((column, colIndex) => (
+            <TableCell key={`skeleton-${index}-${column.id}`}>
               {column.id === "avatar" ? (
                 <Skeleton className="h-8 w-8 rounded-full" />
               ) : column.id === "labels" ? (
@@ -229,6 +234,7 @@ export function UserTable() {
                 </div>
               ) : column.id === "actions" ? (
                 <div className="flex gap-2">
+                  <Skeleton className="h-8 w-8 rounded-md" />
                   <Skeleton className="h-8 w-8 rounded-md" />
                   <Skeleton className="h-8 w-8 rounded-md" />
                   <Skeleton className="h-8 w-8 rounded-md" />
@@ -323,7 +329,7 @@ export function UserTable() {
               {columns.find((c) => c.id === "providerId")?.visible && <TableHead>プロバイダID</TableHead>}
               {columns.find((c) => c.id === "labels")?.visible && <TableHead>ラベル</TableHead>}
               {columns.find((c) => c.id === "createdAt")?.visible && <TableHead>作成日</TableHead>}
-              {columns.find((c) => c.id === "actions")?.visible && <TableHead className="w-[120px]">操作</TableHead>}
+              {columns.find((c) => c.id === "actions")?.visible && <TableHead className="w-[160px]">操作</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -331,14 +337,14 @@ export function UserTable() {
               // ローディング状態
               Array(5)
                 .fill(0)
-                .map((_, index) => renderSkeletonRow())
+                .map((_, index) => renderSkeletonRow(index))
             ) : users.length > 0 ? (
               users.map((user) => (
                 <TableRow key={user.id}>
                   {columns.find((c) => c.id === "avatar")?.visible && (
                     <TableCell>
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar || "./placeholder.svg"} alt={user.name} />
+                        <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
                         <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
                       </Avatar>
                     </TableCell>
@@ -448,6 +454,22 @@ export function UserTable() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={() => navigateToSessions(user.id)}
+                                className="text-amber-500 hover:text-amber-600"
+                              >
+                                <History className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>セッション一覧</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => handleLoginAsUser(user.id)}
                                 className="text-purple-500 hover:text-purple-600"
                                 disabled={actionInProgress === user.id + "_login"}
@@ -489,6 +511,7 @@ export function UserTable() {
               handleUserUpdated()
             }
           }}
+          onUserDeleted={handleUserUpdated}
         />
       )}
     </div>

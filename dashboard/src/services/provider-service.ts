@@ -2,12 +2,11 @@
 // 実際の実装ではバックエンドAPIとの通信を行う
 
 export interface Provider {
-  id: string
-  name: string
-  enabled: boolean
-  clientId: string
-  clientSecret: string
-  callbackUrl: string
+  ProviderCode: string
+  ClientID: string
+  ClientSecret: string
+  CallbackURL: string
+  IsEnabled: number
 }
 
 // プロバイダ一覧を取得
@@ -17,14 +16,14 @@ export async function getProviders(): Promise<Provider[]> {
 }
 
 // プロバイダを更新
-export async function updateProvider(provider: Partial<Provider> & { id: string }): Promise<Provider> {
+export async function updateProvider(provider: Provider): Promise<Provider> {
   // 実際の実装ではAPIを呼び出してプロバイダを更新
   console.log("Update provider:", provider)
 
   // モックデータを更新して返す
-  const index = mockProviders.findIndex((p) => p.id === provider.id)
+  const index = mockProviders.findIndex((p) => p.ProviderCode === provider.ProviderCode)
   if (index !== -1) {
-    mockProviders[index] = { ...mockProviders[index], ...provider }
+    mockProviders[index] = { ...provider }
     return mockProviders[index]
   }
 
@@ -32,60 +31,106 @@ export async function updateProvider(provider: Partial<Provider> & { id: string 
 }
 
 // プロバイダの有効/無効を切り替え
-export async function toggleProvider(providerId: string): Promise<Provider> {
+export async function toggleProvider(providerCode: string): Promise<Provider> {
   // 実際の実装ではAPIを呼び出してプロバイダの有効/無効を切り替え
-  console.log("Toggle provider:", providerId)
+  console.log("Toggle provider:", providerCode)
 
   // モックデータを更新して返す
-  const index = mockProviders.findIndex((p) => p.id === providerId)
+  const index = mockProviders.findIndex((p) => p.ProviderCode === providerCode)
   if (index !== -1) {
-    mockProviders[index].enabled = !mockProviders[index].enabled
+    mockProviders[index].IsEnabled = mockProviders[index].IsEnabled === 1 ? 0 : 1
     return mockProviders[index]
   }
 
   throw new Error("Provider not found")
 }
 
+// Basic認証設定を取得
+export async function getBasicSettings(): Promise<{
+  enabled: boolean
+  hashRounds: number
+}> {
+  // 実際の実装ではAPIからデータを取得
+  return mockBasicSettings
+}
+
+// Basic認証設定を更新
+export async function updateBasicSettings(settings: {
+  enabled: boolean
+  hashRounds: number
+}): Promise<{
+  enabled: boolean
+  hashRounds: number
+}> {
+  // 実際の実装ではAPIを呼び出して設定を更新
+  console.log("Update basic settings:", settings)
+
+  // モックデータを更新して返す
+  mockBasicSettings = { ...settings }
+  return mockBasicSettings
+}
+
+// システム設定を取得
+export async function getSystemSettings(): Promise<{
+  secretKey: string
+}> {
+  // 実際の実装ではAPIからデータを取得
+  return mockSystemSettings
+}
+
+// システム設定を更新
+export async function updateSystemSettings(settings: {
+  secretKey: string
+}): Promise<{
+  secretKey: string
+}> {
+  // 実際の実装ではAPIを呼び出して設定を更新
+  console.log("Update system settings:", settings)
+
+  // モックデータを更新して返す
+  mockSystemSettings = { ...settings }
+  return mockSystemSettings
+}
+
 // モックデータ
 const mockProviders: Provider[] = [
   {
-    id: "google",
-    name: "Google",
-    enabled: true,
-    clientId: "123456789012-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
-    clientSecret: "GOCSPX-abcdefghijklmnopqrstuvwxyz123456",
-    callbackUrl: "https://example.com/api/auth/callback/google",
+    ProviderCode: "google",
+    ClientID: "123456789012-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
+    ClientSecret: "GOCSPX-abcdefghijklmnopqrstuvwxyz123456",
+    CallbackURL: "https://example.com/api/auth/callback/google",
+    IsEnabled: 1,
   },
   {
-    id: "line",
-    name: "LINE",
-    enabled: false,
-    clientId: "",
-    clientSecret: "",
-    callbackUrl: "https://example.com/api/auth/callback/line",
+    ProviderCode: "discord",
+    ClientID: "",
+    ClientSecret: "",
+    CallbackURL: "https://example.com/api/auth/callback/discord",
+    IsEnabled: 0,
   },
   {
-    id: "github",
-    name: "GitHub",
-    enabled: true,
-    clientId: "abcdef1234567890abcd",
-    clientSecret: "abcdef1234567890abcdef1234567890abcdef12",
-    callbackUrl: "https://example.com/api/auth/callback/github",
+    ProviderCode: "github",
+    ClientID: "abcdef1234567890abcd",
+    ClientSecret: "abcdef1234567890abcdef1234567890abcdef12",
+    CallbackURL: "https://example.com/api/auth/callback/github",
+    IsEnabled: 1,
   },
   {
-    id: "microsoft",
-    name: "Microsoft",
-    enabled: false,
-    clientId: "",
-    clientSecret: "",
-    callbackUrl: "https://example.com/api/auth/callback/microsoft",
-  },
-  {
-    id: "basic",
-    name: "Basic",
-    enabled: true,
-    clientId: "basic_auth_client",
-    clientSecret: "basic_auth_secret",
-    callbackUrl: "https://example.com/api/auth/callback/basic",
+    ProviderCode: "microsoft",
+    ClientID: "",
+    ClientSecret: "",
+    CallbackURL: "https://example.com/api/auth/callback/microsoft",
+    IsEnabled: 0,
   },
 ]
+
+// Basic認証設定のモックデータ
+let mockBasicSettings = {
+  enabled: true,
+  hashRounds: 10,
+}
+
+// システム設定のモックデータ
+let mockSystemSettings = {
+  secretKey: "your-secret-key-for-jwt-and-encryption",
+}

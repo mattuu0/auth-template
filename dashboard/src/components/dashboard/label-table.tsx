@@ -130,19 +130,19 @@ export function LabelTable() {
   }, [])
 
   // ローディング中のスケルトン表示
-  const renderSkeletonRow = () => {
+  const renderSkeletonRow = (index: number) => {
     return (
-      <TableRow>
-        <TableCell>
+      <TableRow key={`skeleton-row-${index}`}>
+        <TableCell key={`skeleton-name-${index}`}>
           <Skeleton className="h-5 w-32" />
         </TableCell>
-        <TableCell>
+        <TableCell key={`skeleton-color-${index}`}>
           <Skeleton className="h-6 w-24 rounded-full" />
         </TableCell>
-        <TableCell>
+        <TableCell key={`skeleton-date-${index}`}>
           <Skeleton className="h-5 w-24" />
         </TableCell>
-        <TableCell>
+        <TableCell key={`skeleton-actions-${index}`}>
           <div className="flex gap-2">
             <Skeleton className="h-8 w-8 rounded-md" />
             <Skeleton className="h-8 w-8 rounded-md" />
@@ -184,7 +184,7 @@ export function LabelTable() {
               // ローディング状態
               Array(5)
                 .fill(0)
-                .map((_, index) => renderSkeletonRow())
+                .map((_, index) => renderSkeletonRow(index))
             ) : labels.length > 0 ? (
               labels.map((label) => (
                 <TableRow key={label.id}>

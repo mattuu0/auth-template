@@ -1,99 +1,203 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { Copy } from "lucide-react"
+import { Copy, Loader2, AlertCircle } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
-
-// プロバイダ設定
-const initialProviders = {
-  google: {
-    enabled: true,
-    clientId: "123456789012-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
-    clientSecret: "GOCSPX-abcdefghijklmnopqrstuvwxyz123456",
-    callbackUrl: "https://example.com/api/auth/callback/google",
-  },
-  discord: {
-    enabled: false,
-    clientId: "",
-    clientSecret: "",
-    callbackUrl: "https://example.com/api/auth/callback/discord",
-  },
-  github: {
-    enabled: true,
-    clientId: "abcdef1234567890abcd",
-    clientSecret: "abcdef1234567890abcdef1234567890abcdef12",
-    callbackUrl: "https://example.com/api/auth/callback/github",
-  },
-  microsoft: {
-    enabled: false,
-    clientId: "",
-    clientSecret: "",
-    callbackUrl: "https://example.com/api/auth/callback/microsoft",
-  },
-}
-
-// Basic認証の設定（独立して管理）
-const initialBasicSettings = {
-  enabled: true,
-  hashRounds: 10,
-}
-
-// システム設定
-const initialSystemSettings = {
-  secretKey: "your-secret-key-for-jwt-and-encryption",
-}
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  getProviders,
+  updateProvider,
+  toggleProvider,
+  getBasicSettings,
+  updateBasicSettings,
+  getSystemSettings,
+  updateSystemSettings,
+  type Provider,
+} from "@/services/provider-service"
 
 export function ProviderSettings() {
-  const [providers, setProviders] = useState(initialProviders)
-  const [basicSettings, setBasicSettings] = useState(initialBasicSettings)
-  const [systemSettings, setSystemSettings] = useState(initialSystemSettings)
+  const [providers, setProviders] = useState<Provider[]>([])
+  const [basicSettings, setBasicSettings] = useState<{ enabled: boolean; hashRounds: number }>({
+    enabled: true,
+    hashRounds: 10,
+  })
+  const [systemSettings, setSystemSettings] = useState<{ secretKey: string }>({
+    secretKey: "",
+  })
   const [activeTab, setActiveTab] = useState("google")
+  const [saving, setSaving] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  // データの初期ロード
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        // プロバイダデータを取得
+        const providersData = await getProviders()
+        setProviders(providersData)
+
+        // Basic認証設定を取得
+        const basicData = await getBasicSettings()
+        setBasicSettings(basicData)
+
+        // システム設定を取得
+        const systemData = await getSystemSettings()
+        setSystemSettings(systemData)
+
+        // 最初のプロバイダをアクティブタブに設定
+        if (providersData.length > 0) {
+          setActiveTab(providersData[0].ProviderCode)
+        }
+      } catch (err) {
+        console.error("設定の取得に失敗しました:", err)
+        setError("設定の取得に失敗しました。ページを再読み込みしてください。")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   // プロバイダの有効/無効を切り替え
-  const toggleProvider = (provider: keyof typeof providers) => {
-    setProviders({
-      ...providers,
-      [provider]: {
-        ...providers[provider],
-        enabled: !providers[provider].enabled,
-      },
-    })
+  const handleToggleProvider = async (providerCode: string) => {
+    try {
+      setSaving(providerCode)
+      setError(null)
+
+      // サービスを呼び出してプロバイダの有効/無効を切り替え
+      const updatedProvider = await toggleProvider(providerCode)
+
+      // 状態を更新
+      setProviders(providers.map((provider) => (provider.ProviderCode === providerCode ? updatedProvider : provider)))
+
+      setSuccess("プロバイダの設定を更新しました")
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err) {
+      console.error("プロバイダの切り替えに失敗しました:", err)
+      setError("プロバイダの切り替えに失敗しました")
+    } finally {
+      setSaving(null)
+    }
   }
 
   // Basic認証の有効/無効を切り替え
-  const toggleBasic = () => {
-    setBasicSettings({
-      ...basicSettings,
-      enabled: !basicSettings.enabled,
-    })
+  const toggleBasic = async () => {
+    try {
+      setSaving("basic")
+      setError(null)
+
+      const updatedSettings = await updateBasicSettings({
+        ...basicSettings,
+        enabled: !basicSettings.enabled,
+      })
+
+      setBasicSettings(updatedSettings)
+      setSuccess("Basic認証の設定を更新しました")
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err) {
+      console.error("Basic認証の切り替えに失敗しました:", err)
+      setError("Basic認証の切り替えに失敗しました")
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  // プロバイダ設定を保存
+  const saveProviderSettings = async (providerCode: string) => {
+    try {
+      setSaving(providerCode)
+      setError(null)
+
+      const provider = providers.find((p) => p.ProviderCode === providerCode)
+      if (!provider) {
+        throw new Error("Provider not found")
+      }
+
+      // サービスを呼び出してプロバイダを更新
+      const updatedProvider = await updateProvider(provider)
+
+      // 状態を更新
+      setProviders(providers.map((p) => (p.ProviderCode === providerCode ? updatedProvider : p)))
+
+      setSuccess("プロバイダの設定を保存しました")
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err) {
+      console.error("プロバイダの保存に失敗しました:", err)
+      setError("プロバイダの保存に失敗しました")
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  // Basic認証設定を保存
+  const saveBasicSettings = async () => {
+    try {
+      setSaving("basic")
+      setError(null)
+
+      // サービスを呼び出してBasic認証設定を更新
+      const updatedSettings = await updateBasicSettings(basicSettings)
+
+      setBasicSettings(updatedSettings)
+      setSuccess("Basic認証の設定を保存しました")
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err) {
+      console.error("Basic認証設定の保存に失敗しました:", err)
+      setError("Basic認証設定の保存に失敗しました")
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  // システム設定を保存
+  const saveSystemSettings = async () => {
+    try {
+      setSaving("system")
+      setError(null)
+
+      // サービスを呼び出してシステム設定を更新
+      const updatedSettings = await updateSystemSettings(systemSettings)
+
+      setSystemSettings(updatedSettings)
+      setSuccess("システム設定を保存しました")
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err) {
+      console.error("システム設定の保存に失敗しました:", err)
+      setError("システム設定の保存に失敗しました")
+    } finally {
+      setSaving(null)
+    }
   }
 
   // クライアントIDを更新
-  const updateClientId = (provider: keyof typeof providers, value: string) => {
-    setProviders({
-      ...providers,
-      [provider]: {
-        ...providers[provider],
-        clientId: value,
-      },
-    })
+  const updateClientId = (providerCode: string, value: string) => {
+    setProviders(
+      providers.map((provider) =>
+        provider.ProviderCode === providerCode ? { ...provider, ClientID: value } : provider,
+      ),
+    )
   }
 
   // クライアントシークレットを更新
-  const updateClientSecret = (provider: keyof typeof providers, value: string) => {
-    setProviders({
-      ...providers,
-      [provider]: {
-        ...providers[provider],
-        clientSecret: value,
-      },
-    })
+  const updateClientSecret = (providerCode: string, value: string) => {
+    setProviders(
+      providers.map((provider) =>
+        provider.ProviderCode === providerCode ? { ...provider, ClientSecret: value } : provider,
+      ),
+    )
   }
 
   // ハッシュラウンド数を更新
@@ -117,81 +221,66 @@ export function ProviderSettings() {
     navigator.clipboard.writeText(text)
   }
 
-  // 設定を保存
-  const saveSettings = () => {
-    // 実際の実装ではサービスを呼び出して設定を保存
-    console.log("Save provider settings:", providers)
-    console.log("Save basic settings:", basicSettings)
-    console.log("Save system settings:", systemSettings)
+  // プロバイダ名の表示名マッピング
+  const providerDisplayNames: Record<string, string> = {
+    google: "Google",
+    discord: "Discord",
+    github: "GitHub",
+    microsoft: "Microsoft",
+  }
+
+  // ローディング中の表示
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-[300px] w-full" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {success && (
+        <Alert variant="default" className="bg-green-50 text-green-800 border-green-200">
+          <AlertCircle className="h-4 w-4 text-green-500" />
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="google">Google</TabsTrigger>
-          <TabsTrigger value="discord">Discord</TabsTrigger>
-          <TabsTrigger value="github">GitHub</TabsTrigger>
-          <TabsTrigger value="microsoft">Microsoft</TabsTrigger>
+          {providers.map((provider) => (
+            <TabsTrigger key={provider.ProviderCode} value={provider.ProviderCode}>
+              {providerDisplayNames[provider.ProviderCode]}
+            </TabsTrigger>
+          ))}
           <TabsTrigger value="basic">Basic</TabsTrigger>
           <TabsTrigger value="system">システム</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="google">
-          <OAuthProviderCard
-            title="Google認証"
-            description="GoogleアカウントでのログインをユーザーにOAuthで提供します。"
-            provider="google"
-            data={providers.google}
-            onToggle={() => toggleProvider("google")}
-            onUpdateClientId={(value) => updateClientId("google", value)}
-            onUpdateClientSecret={(value) => updateClientSecret("google", value)}
-            onCopy={copyToClipboard}
-            onSave={saveSettings}
-          />
-        </TabsContent>
-
-        <TabsContent value="discord">
-          <OAuthProviderCard
-            title="Discord認証"
-            description="Discordアカウントでのログインをユーザーにプロバイダします。"
-            provider="discord"
-            data={providers.discord}
-            onToggle={() => toggleProvider("discord")}
-            onUpdateClientId={(value) => updateClientId("discord", value)}
-            onUpdateClientSecret={(value) => updateClientSecret("discord", value)}
-            onCopy={copyToClipboard}
-            onSave={saveSettings}
-          />
-        </TabsContent>
-
-        <TabsContent value="github">
-          <OAuthProviderCard
-            title="GitHub認証"
-            description="GitHubアカウントでのログインをユーザーにOAuthで提供します。"
-            provider="github"
-            data={providers.github}
-            onToggle={() => toggleProvider("github")}
-            onUpdateClientId={(value) => updateClientId("github", value)}
-            onUpdateClientSecret={(value) => updateClientSecret("github", value)}
-            onCopy={copyToClipboard}
-            onSave={saveSettings}
-          />
-        </TabsContent>
-
-        <TabsContent value="microsoft">
-          <OAuthProviderCard
-            title="Microsoft認証"
-            description="Microsoftアカウントでのログインをユーザーにプロバイダします。"
-            provider="microsoft"
-            data={providers.microsoft}
-            onToggle={() => toggleProvider("microsoft")}
-            onUpdateClientId={(value) => updateClientId("microsoft", value)}
-            onUpdateClientSecret={(value) => updateClientSecret("microsoft", value)}
-            onCopy={copyToClipboard}
-            onSave={saveSettings}
-          />
-        </TabsContent>
+        {providers.map((provider) => (
+          <TabsContent key={provider.ProviderCode} value={provider.ProviderCode}>
+            <OAuthProviderCard
+              title={`${providerDisplayNames[provider.ProviderCode]}認証`}
+              description={`${providerDisplayNames[provider.ProviderCode]}アカウントでのログインをユーザーにOAuthで提供します。`}
+              provider={provider}
+              onToggle={() => handleToggleProvider(provider.ProviderCode)}
+              onUpdateClientId={(value) => updateClientId(provider.ProviderCode, value)}
+              onUpdateClientSecret={(value) => updateClientSecret(provider.ProviderCode, value)}
+              onCopy={copyToClipboard}
+              onSave={() => saveProviderSettings(provider.ProviderCode)}
+              saving={saving === provider.ProviderCode}
+            />
+          </TabsContent>
+        ))}
 
         <TabsContent value="basic">
           <BasicProviderCard
@@ -200,7 +289,8 @@ export function ProviderSettings() {
             data={basicSettings}
             onToggle={toggleBasic}
             onUpdateHashRounds={updateHashRounds}
-            onSave={saveSettings}
+            onSave={saveBasicSettings}
+            saving={saving === "basic"}
           />
         </TabsContent>
 
@@ -210,7 +300,8 @@ export function ProviderSettings() {
             description="認証システム全体に関わる設定を管理します。"
             data={systemSettings}
             onUpdateSecretKey={updateSecretKey}
-            onSave={saveSettings}
+            onSave={saveSystemSettings}
+            saving={saving === "system"}
           />
         </TabsContent>
       </Tabs>
@@ -221,30 +312,25 @@ export function ProviderSettings() {
 interface OAuthProviderCardProps {
   title: string
   description: string
-  provider: string
-  data: {
-    enabled: boolean
-    clientId: string
-    clientSecret: string
-    callbackUrl: string
-  }
+  provider: Provider
   onToggle: () => void
   onUpdateClientId: (value: string) => void
   onUpdateClientSecret: (value: string) => void
   onCopy: (text: string) => void
   onSave: () => void
+  saving: boolean
 }
 
 function OAuthProviderCard({
   title,
   description,
   provider,
-  data,
   onToggle,
   onUpdateClientId,
   onUpdateClientSecret,
   onCopy,
   onSave,
+  saving,
 }: OAuthProviderCardProps) {
   return (
     <Card>
@@ -255,49 +341,71 @@ function OAuthProviderCard({
             <CardDescription>{description}</CardDescription>
           </div>
           <div className="flex items-center space-x-2">
-            <Label htmlFor={`${provider}-toggle`}>{data.enabled ? "有効" : "無効"}</Label>
-            <Switch id={`${provider}-toggle`} checked={data.enabled} onCheckedChange={onToggle} />
+            <Label htmlFor={`${provider.ProviderCode}-toggle`}>{provider.IsEnabled === 1 ? "有効" : "無効"}</Label>
+            <Switch
+              id={`${provider.ProviderCode}-toggle`}
+              checked={provider.IsEnabled === 1}
+              onCheckedChange={onToggle}
+            />
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-2">
-          <Label htmlFor={`${provider}-client-id`}>クライアントID</Label>
+          <Label htmlFor={`${provider.ProviderCode}-client-id`}>クライアントID</Label>
           <div className="flex">
             <Input
-              id={`${provider}-client-id`}
-              value={data.clientId}
+              id={`${provider.ProviderCode}-client-id`}
+              value={provider.ClientID}
               onChange={(e) => onUpdateClientId(e.target.value)}
               className="rounded-r-none"
             />
-          </div>
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor={`${provider}-client-secret`}>クライアントシークレット</Label>
-          <div className="flex">
-            <Input
-              id={`${provider}-client-secret`}
-              type="password"
-              value={data.clientSecret}
-              onChange={(e) => onUpdateClientSecret(e.target.value)}
-              className="rounded-r-none"
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor={`${provider}-callback-url`}>コールバックURL</Label>
-          <div className="flex">
-            <Input id={`${provider}-callback-url`} value={data.callbackUrl} disabled className="rounded-r-none" />
-            <Button variant="secondary" className="rounded-l-none" onClick={() => onCopy(data.callbackUrl)}>
+            <Button variant="secondary" className="rounded-l-none" onClick={() => onCopy(provider.ClientID)}>
               <Copy className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        <Button onClick={onSave} className="mt-4">
-          設定を保存
+        <div className="grid gap-2">
+          <Label htmlFor={`${provider.ProviderCode}-client-secret`}>クライアントシークレット</Label>
+          <div className="flex">
+            <Input
+              id={`${provider.ProviderCode}-client-secret`}
+              type="password"
+              value={provider.ClientSecret}
+              onChange={(e) => onUpdateClientSecret(e.target.value)}
+              className="rounded-r-none"
+            />
+            <Button variant="secondary" className="rounded-l-none" onClick={() => onCopy(provider.ClientSecret)}>
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor={`${provider.ProviderCode}-callback-url`}>コールバックURL</Label>
+          <div className="flex">
+            <Input
+              id={`${provider.ProviderCode}-callback-url`}
+              value={provider.CallbackURL}
+              disabled
+              className="rounded-r-none"
+            />
+            <Button variant="secondary" className="rounded-l-none" onClick={() => onCopy(provider.CallbackURL)}>
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <Button onClick={onSave} className="mt-4" disabled={saving}>
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              保存中...
+            </>
+          ) : (
+            "設定を保存"
+          )}
         </Button>
       </CardContent>
     </Card>
@@ -314,9 +422,18 @@ interface BasicProviderCardProps {
   onToggle: () => void
   onUpdateHashRounds: (value: number[]) => void
   onSave: () => void
+  saving: boolean
 }
 
-function BasicProviderCard({ title, description, data, onToggle, onUpdateHashRounds, onSave }: BasicProviderCardProps) {
+function BasicProviderCard({
+  title,
+  description,
+  data,
+  onToggle,
+  onUpdateHashRounds,
+  onSave,
+  saving,
+}: BasicProviderCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -350,8 +467,15 @@ function BasicProviderCard({ title, description, data, onToggle, onUpdateHashRou
           </p>
         </div>
 
-        <Button onClick={onSave} className="mt-4">
-          設定を保存
+        <Button onClick={onSave} className="mt-4" disabled={saving}>
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              保存中...
+            </>
+          ) : (
+            "設定を保存"
+          )}
         </Button>
       </CardContent>
     </Card>
@@ -366,9 +490,10 @@ interface SystemSettingsCardProps {
   }
   onUpdateSecretKey: (value: string) => void
   onSave: () => void
+  saving: boolean
 }
 
-function SystemSettingsCard({ title, description, data, onUpdateSecretKey, onSave }: SystemSettingsCardProps) {
+function SystemSettingsCard({ title, description, data, onUpdateSecretKey, onSave, saving }: SystemSettingsCardProps) {
   const [showSecretKey, setShowSecretKey] = useState(false)
 
   return (
@@ -398,8 +523,15 @@ function SystemSettingsCard({ title, description, data, onUpdateSecretKey, onSav
           </p>
         </div>
 
-        <Button onClick={onSave} className="mt-4">
-          設定を保存
+        <Button onClick={onSave} className="mt-4" disabled={saving}>
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              保存中...
+            </>
+          ) : (
+            "設定を保存"
+          )}
         </Button>
       </CardContent>
     </Card>

@@ -35,6 +35,8 @@ export async function searchLabels(query: string): Promise<Label[]> {
 
 // ラベルを作成
 export async function createLabel(label: Omit<Label, "id" | "createdAt">) {
+  // 実際の実装ではAPIを呼び出してラベルを作成
+  console.log("Create label:", label)
   // ラベルを作成する
   const req = await fetch("/auth/api/labels", {
     method: 'POST',
@@ -54,7 +56,7 @@ export async function createLabel(label: Omit<Label, "id" | "createdAt">) {
 }
 
 // ラベルを更新
-export async function updateLabel(label: Partial<Label> & { id: string }): Promise<void> {
+export async function updateLabel(label: Partial<Label> & { id: string }) {
   // 実際の実装ではAPIを呼び出してラベルを更新
   console.log("Update label:", label);
 
@@ -74,7 +76,7 @@ export async function updateLabel(label: Partial<Label> & { id: string }): Promi
 }
 
 // ラベルを削除
-export async function deleteLabel(labelId: string): Promise<void> {
+export async function deleteLabel(labelId: string) {
   // 実際の実装ではAPIを呼び出してラベルを削除
   console.log("Delete label:", labelId)
 
@@ -94,31 +96,3 @@ export async function deleteLabel(labelId: string): Promise<void> {
 
   return;
 }
-
-// // モックデータ
-// const labels: Label[] = [
-//   {
-//     id: "lbl_123456",
-//     name: "管理者",
-//     color: "#ef4444",
-//     createdAt: "2023-01-10",
-//   },
-//   {
-//     id: "lbl_234567",
-//     name: "一般ユーザー",
-//     color: "#3b82f6",
-//     createdAt: "2023-01-15",
-//   },
-//   {
-//     id: "lbl_345678",
-//     name: "プレミアム",
-//     color: "#a855f7",
-//     createdAt: "2023-02-20",
-//   },
-//   {
-//     id: "lbl_456789",
-//     name: "ベータテスター",
-//     color: "#22c55e",
-//     createdAt: "2023-03-05",
-//   },
-// ]
