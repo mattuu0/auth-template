@@ -8,7 +8,7 @@ import (
 
 func ErrorScreen(ctx echo.Context, code int, ErrorID string, Error error) error {
 	// エラー表示
-	logger.PrintErr("ErrorID: " + ErrorID,Error)
+	logger.PrintErr2(2,"ErrorID: " + ErrorID,Error)
 
 	return ctx.Render(code, "error-screen.html", echo.Map{
 		"StatusCode": code,
