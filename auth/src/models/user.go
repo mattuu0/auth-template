@@ -1,5 +1,11 @@
 package models
 
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
+
 type User struct {
 	UserID       string       `gorm:"type:varchar(255);primaryKey"`                             // ユーザーID
 	Name         string       `gorm:"type:varchar(255)"`                                        // ユーザー名
@@ -45,22 +51,36 @@ func CreateUser(user *User, ProviderCode ProviderCode) error {
 	return nil
 }
 
+type GetResult struct {
+	Error error	//エラー型
+	IsExists bool	//存在するか
+}
+
 // ユーザーを取得
-func GetUser(userID string) (*User, error) {
+func GetUser(userID string) (*User, GetResult) {
 	var user User
 
 	// 取得する
 	err := dbconn.Where(&User{UserID: userID}).First(&user).Error
-	return &user, err
+
+
+	return &user, GetResult{
+		Error:    err,
+		IsExists: !errors.Is(err,gorm.ErrRecordNotFound),
+	}
 }
 
 // メールアドレスからユーザーを取得
-func GetUserByEmail(email string) (*User, error) {
+func GetUserByEmail(email string) (*User, GetResult) {
 	var user User
 
 	// 取得する
 	err := dbconn.Where(&User{Email: email}).First(&user).Error
-	return &user, err
+
+	return &user, GetResult{
+		Error:    err,
+		IsExists: !errors.Is(err,gorm.ErrRecordNotFound),
+	}
 }
 
 // 全てのユーザーを取得

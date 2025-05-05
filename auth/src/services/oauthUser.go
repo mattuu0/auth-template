@@ -24,10 +24,10 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 	now := utils.NowTime()
 
 	// ユーザーを取得する
-	user, err := models.GetUserByEmail(args.Email)
+	user, result := models.GetUserByEmail(args.Email)
 
-	// エラー処理
-	if err == nil {
+	// 存在する時
+	if result.IsExists {
 		// ユーザーが取得できた時
 		// セッションを追加する
 		token, err := NewSession(SessionArgs{
@@ -39,8 +39,10 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 		return token, err
 	}
 
+	// 存在しない時
+
 	// ユーザーを作成する
-	err = models.CreateUser(&models.User{
+	err := models.CreateUser(&models.User{
 		UserID:       uid,
 		Name:         args.Name,
 		Email:        args.Email,

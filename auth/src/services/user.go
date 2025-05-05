@@ -17,11 +17,11 @@ type UserInfo struct {
 
 func GetMe(userid string) (UserInfo, error) {
 	// ユーザー取得
-	user, err := models.GetUser(userid)
+	user, result := models.GetUser(userid)
 
 	// エラー処理
-	if err != nil {
-		return UserInfo{}, err
+	if result.Error != nil {
+		return UserInfo{}, result.Error
 	}
 
 	return UserInfo{
@@ -44,18 +44,18 @@ type UpdateUserData struct {
 // ユーザーを更新する関数
 func UpdateUser(args UpdateUserData) error {
 	// ユーザーを取得
-	user, err := models.GetUser(args.ID)
+	user, result := models.GetUser(args.ID)
 
 	// エラー処理
-	if err != nil {
-		return err
+	if result.Error != nil {
+		return result.Error
 	}
 
 	// ユーザーを更新する
 	user.Name = args.Name
 
 	// ラベルを削除する
-	err = user.RemoveAllLabels()
+	err := user.RemoveAllLabels()
 
 	// エラー処理
 	if err != nil {

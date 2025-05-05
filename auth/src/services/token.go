@@ -4,11 +4,11 @@ import "auth/models"
 
 func GetAccessToken(userID string) (string, error) {
 	// ユーザーを取得
-	user, err := models.GetUser(userID)
+	user, result := models.GetUser(userID)
 
 	// エラー処理
-	if err != nil {
-		return "", err
+	if result.Error != nil {
+		return "", result.Error
 	}
 
 	// トークンを生成

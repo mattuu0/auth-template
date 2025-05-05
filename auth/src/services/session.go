@@ -54,11 +54,11 @@ func ValidateSessionToken(tokenString string) (string, error) {
 // セッションを作成してトークンを返す
 func NewSession(args SessionArgs) (string, error) {
 	// ユーザーIDを取得
-	user, err := models.GetUser(args.UserID)
+	user, result := models.GetUser(args.UserID)
 
 	// エラー処理
-	if err != nil {
-		return "", err
+	if result.Error != nil {
+		return "", result.Error
 	}
 
 	// セッションIDを生成

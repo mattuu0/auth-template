@@ -4,11 +4,11 @@ import "auth/models"
 
 func Logout(session *models.Session) error {
 	// ユーザー取得
-	user, err := models.GetUser(session.UserID)
+	user, result := models.GetUser(session.UserID)
 
 	// エラー処理
-	if err != nil {
-		return err
+	if result.Error != nil {
+		return result.Error
 	}
 
 	// セッションを削除

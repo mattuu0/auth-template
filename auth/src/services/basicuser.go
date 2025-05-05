@@ -45,10 +45,11 @@ func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
 	now := utils.NowTime()
 
 	// ユーザーを取得する
-	_, err = models.GetUserByEmail(args.Email)
+	_, result := models.GetUserByEmail(args.Email)
 
 	// エラー処理
-	if err == nil {
+	if result.IsExists {
+		// 存在するとき
 		return "", structs.HttpResult{
 			Code: http.StatusConflict,
 			Message: "user already exists",
@@ -146,10 +147,10 @@ func LoginBasicUser(args LoginBasicUserArgs) (string,structs.HttpResult) {
 	}
 
 	// ユーザーを取得する
-	user, err := models.GetUserByEmail(args.Email)
+	user, result := models.GetUserByEmail(args.Email)
 
 	// エラー処理
-	if err != nil {
+	if result.Error != nil {
 		return "",structs.HttpResult{
 			Code: http.StatusInternalServerError,
 			Message: "failed to get user",
