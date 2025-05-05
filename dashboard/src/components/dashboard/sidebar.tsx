@@ -177,7 +177,11 @@ export function Sidebar() {
                 isCollapsed ? "hidden" : "",
               )}
             >
-              <span>{loginAsUser.name}としてログイン中</span>
+              <div className="w-full text-center">
+                <span>{loginAsUser.name}</span>
+                <br />
+                <span>としてログイン中</span>
+              </div>
               <Button variant="ghost" size="sm" className="h-6 px-2" onClick={handleClearLoginAs}>
                 解除
               </Button>
