@@ -3,16 +3,30 @@
 
 export interface Provider {
   ProviderCode: string
+  ProviderName: string
   ClientID: string
   ClientSecret: string
   CallbackURL: string
   IsEnabled: number
 }
 
+// プロバイダ一覧のデータ
+let provicers: Provider[] = []
+
 // プロバイダ一覧を取得
 export async function getProviders(): Promise<Provider[]> {
-  // 実際の実装ではAPIからデータを取得
-  return mockProviders
+  // API からデータ取得
+  const req = await fetch("/auth/api/providers/oauth", {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
+
+  // プロバイダ一覧を取得
+  provicers = await req.json();
+
+  return provicers
 }
 
 // プロバイダを更新
@@ -20,11 +34,27 @@ export async function updateProvider(provider: Provider): Promise<Provider> {
   // 実際の実装ではAPIを呼び出してプロバイダを更新
   console.log("Update provider:", provider)
 
+  // API を送信
+  const req = await fetch("/auth/api/providers/oauth", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify([provider]),
+  });
+
+  // 結果を検証
+  if (!req.ok) {
+    throw new Error("Failed to update provider")
+  }
+
+  console.log(provicers);
+
   // モックデータを更新して返す
-  const index = mockProviders.findIndex((p) => p.ProviderCode === provider.ProviderCode)
+  const index = provicers.findIndex((prov) => prov.ProviderCode === provider.ProviderCode)
   if (index !== -1) {
-    mockProviders[index] = { ...provider }
-    return mockProviders[index]
+    provicers[index] = { ...provider }
+    return provicers[index]
   }
 
   throw new Error("Provider not found")
@@ -36,10 +66,10 @@ export async function toggleProvider(providerCode: string): Promise<Provider> {
   console.log("Toggle provider:", providerCode)
 
   // モックデータを更新して返す
-  const index = mockProviders.findIndex((p) => p.ProviderCode === providerCode)
+  const index = provicers.findIndex((p) => p.ProviderCode === providerCode)
   if (index !== -1) {
-    mockProviders[index].IsEnabled = mockProviders[index].IsEnabled === 1 ? 0 : 1
-    return mockProviders[index]
+    provicers[index].IsEnabled = provicers[index].IsEnabled === 1 ? 0 : 1
+    return provicers[index]
   }
 
   throw new Error("Provider not found")
@@ -93,36 +123,36 @@ export async function updateSystemSettings(settings: {
 }
 
 // モックデータ
-const mockProviders: Provider[] = [
-  {
-    ProviderCode: "google",
-    ClientID: "123456789012-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
-    ClientSecret: "GOCSPX-abcdefghijklmnopqrstuvwxyz123456",
-    CallbackURL: "https://example.com/api/auth/callback/google",
-    IsEnabled: 1,
-  },
-  {
-    ProviderCode: "discord",
-    ClientID: "",
-    ClientSecret: "",
-    CallbackURL: "https://example.com/api/auth/callback/discord",
-    IsEnabled: 0,
-  },
-  {
-    ProviderCode: "github",
-    ClientID: "abcdef1234567890abcd",
-    ClientSecret: "abcdef1234567890abcdef1234567890abcdef12",
-    CallbackURL: "https://example.com/api/auth/callback/github",
-    IsEnabled: 1,
-  },
-  {
-    ProviderCode: "microsoft",
-    ClientID: "",
-    ClientSecret: "",
-    CallbackURL: "https://example.com/api/auth/callback/microsoft",
-    IsEnabled: 0,
-  },
-]
+// const mockProviders: Provider[] = [
+//   {
+//     ProviderCode: "google",
+//     ClientID: "123456789012-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
+//     ClientSecret: "GOCSPX-abcdefghijklmnopqrstuvwxyz123456",
+//     CallbackURL: "https://example.com/api/auth/callback/google",
+//     IsEnabled: 1,
+//   },
+//   {
+//     ProviderCode: "discord",
+//     ClientID: "",
+//     ClientSecret: "",
+//     CallbackURL: "https://example.com/api/auth/callback/discord",
+//     IsEnabled: 0,
+//   },
+//   {
+//     ProviderCode: "github",
+//     ClientID: "abcdef1234567890abcd",
+//     ClientSecret: "abcdef1234567890abcdef1234567890abcdef12",
+//     CallbackURL: "https://example.com/api/auth/callback/github",
+//     IsEnabled: 1,
+//   },
+//   {
+//     ProviderCode: "microsoft",
+//     ClientID: "",
+//     ClientSecret: "",
+//     CallbackURL: "https://example.com/api/auth/callback/microsoft",
+//     IsEnabled: 0,
+//   },
+// ]
 
 // Basic認証設定のモックデータ
 let mockBasicSettings = {

@@ -84,6 +84,12 @@ func SetupRouter(router *echo.Echo) {
 			// プロバイダー一覧を取得する
 			providerg.GET("", controllers.GetProviders)
 
+			// Oauth プロバイダ一覧取得
+			providerg.GET("/oauth",controllers.GetOauthProviders)
+
+			// Oauth プロバイダ一覧更新
+			providerg.POST("/oauth",controllers.UpdateOauthProviders)
+
 			// プロバイダー一覧を更新する
 			providerg.POST("", controllers.UpdateProviders)
 		}

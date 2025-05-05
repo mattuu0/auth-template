@@ -43,7 +43,7 @@ func CallbackOauth(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		// html を返す
-		return ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err)
+		return utils.ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err)
 	}
 
 	// ユーザー
@@ -63,7 +63,7 @@ func CallbackOauth(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		// return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
-		return ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err)
+		return utils.ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err)
 	}
 
 	logger.Println(token)

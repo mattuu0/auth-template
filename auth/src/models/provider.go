@@ -15,6 +15,16 @@ const (
 	Basic     ProviderCode = "basic"
 )
 
+var (
+	// Oauth プロバイダ一覧
+	OauthProvides  = []ProviderCode{
+		Google,
+		Github,
+		Discord,
+		Microsoft,
+	}
+)
+
 type Provider struct {
     ProviderName string       `gorm:"primaryKey"` // 認証プロバイダ名
     ClientID     string       // 認証プロバイダのクライアントID
@@ -32,6 +42,12 @@ func GetProvider(providerCode ProviderCode) (*Provider, error) {
 	// 取得する
 	err := dbconn.First(&provider, &Provider{ProviderCode: providerCode}).Error
 	return &provider, err
+}
+
+// Oauthプロバイダを更新
+func UpdateOauthProvider(provider Provider) error {
+	// データを保存する
+	return dbconn.Save(&provider).Error
 }
 
 func CreateProvider(provider *Provider) error {
@@ -122,4 +138,26 @@ func InitProviders() {
 
 	// 完了
 	logger.Println("Providers initialized")
+}
+
+// Oauth のプロバイダ取得
+func GetOauthProviders() []Provider {
+	// 返すデータ
+	returnProviders := []Provider{}
+
+	for _, providerName := range OauthProvides {
+		// プロバイダを取得する
+		provider,err := GetProvider(providerName)
+
+		// エラー処理
+		if err != nil {
+			logger.PrintErr(err)
+			continue
+		}
+
+		// リストの追加
+		returnProviders = append(returnProviders, *provider)
+	}
+	
+	return returnProviders
 }

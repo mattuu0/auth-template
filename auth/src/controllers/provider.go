@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"auth/logger"
+	"auth/services"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -28,11 +30,47 @@ type AuthConfig struct {
 // プロバイダ一覧を取得する関数
 func GetProviders(ctx echo.Context) error {
 	// プロバイダ一覧を取得
-	
-
 	return ctx.JSON(http.StatusOK,echo.Map{"message": "success"})
 }
 
 func UpdateProviders(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK,echo.Map{"message": "success"})
+}
+
+// Oauth プロバイダを取得
+func GetOauthProviders(ctx echo.Context) error {
+	// サービスから取得
+	providers := services.GetOauthProviders()
+
+	return ctx.JSON(http.StatusOK,providers)
+}
+
+// プロバイダを更新
+func UpdateOauthProviders(ctx echo.Context) error {
+	bindData := []services.OauthProvider{}
+
+	// bind する
+	if err := ctx.Bind(&bindData); err != nil {
+		logger.PrintErr(err)
+
+		return ctx.JSON(http.StatusBadRequest,echo.Map{
+			"error" : err.Error(),
+		})
+	}
+
+	// 更新する
+	err := services.UpdateOauthProviders(bindData)
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+
+		return ctx.JSON(http.StatusInternalServerError,echo.Map{
+			"error" : err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK,echo.Map{
+		"result" : "success",
+	})
 }

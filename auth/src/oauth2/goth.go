@@ -3,6 +3,7 @@ package oauth2
 import (
 	"auth/logger"
 	"auth/models"
+	"auth/utils"
 	"context"
 	"encoding/base64"
 	"net/http"
@@ -30,6 +31,15 @@ type OauthArgs struct {
 
 // 認証を開始するメソッド
 func StartOauth(ctx echo.Context, args OauthArgs) error {
+	// プロバイダを取得
+	_,err := goth.GetProvider(args.ProviderName)
+
+	// エラー処理
+	if err != nil {
+		// html を返す
+		return utils.ErrorScreen(ctx,http.StatusBadRequest,utils.GenID(),err)
+	}
+
 	// リクエストを変更
 	ctx.SetRequest(contextWithProviderName(ctx, args.ProviderName))
 
