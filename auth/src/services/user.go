@@ -94,6 +94,14 @@ func UpdateUser(args UpdateUserData) error {
 
 // ここまで
 
+// ここからユーザー削除
+func DeleteUser(userid string) error {
+	// ユーザーを削除する
+	return models.DeleteUser(userid)
+}
+
+// ここまで
+
 // ここからユーザー一覧取得
 type User struct {
 	ID         string   `json:"id"`

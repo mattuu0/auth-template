@@ -109,14 +109,21 @@ export async function deleteUser(userId: string): Promise<void> {
   // 実際の実装ではAPIを呼び出してユーザーを削除
   console.log("Delete user:", userId)
 
-  // モックデータから削除
-  const index = mockUsers.findIndex((u) => u.id === userId)
-  if (index !== -1) {
-    mockUsers.splice(index, 1)
-    return
+  // ユーザーを削除する
+  const req = await fetch("/auth/api/user", {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      "userId": userId
+    },
+  });
+
+  // 結果を検証
+  if (!req.ok) {
+    throw new Error("Failed to delete user")
   }
 
-  throw new Error("User not found")
+  return;
 }
 
 // ユーザーのBANステータスを切り替え

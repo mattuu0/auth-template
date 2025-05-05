@@ -48,6 +48,27 @@ func UpdateUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, echo.Map{"message": "success"})
 }
 
+// ユーザーを削除する
+func DeleteOauth(ctx echo.Context) error {
+	// ヘッダからID取得
+	userid := ctx.Request().Header.Get("userid")
+
+	// 削除する
+	err := services.DeleteUser(userid)
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusInternalServerError,echo.Map{
+			"error" : err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK,echo.Map{
+		"result" : "success",
+	})
+}
+
 
 func GetAllUsers(ctx echo.Context) (error) {
 	// サービスを呼び出す

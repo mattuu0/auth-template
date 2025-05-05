@@ -76,6 +76,9 @@ func SetupRouter(router *echo.Echo) {
 
 			// ユーザーを更新する
 			userg.PUT("", controllers.UpdateUser)
+
+			// ユーザーを削除する
+			userg.DELETE("",controllers.DeleteOauth)
 		}
 
 		// プロバイダグループ

@@ -97,3 +97,16 @@ func UpdateUser(user *User) error {
 	// 更新する
 	return dbconn.Save(user).Error
 }
+
+// ユーザーを削除する
+func DeleteUser(userid string) error {
+	// ユーザーを取得
+	user,result := GetUser(userid)
+
+	// エラー処理
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return dbconn.Unscoped().Delete(user).Error
+}
