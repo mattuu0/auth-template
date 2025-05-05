@@ -4,6 +4,7 @@ import (
 	"auth/logger"
 	"auth/oauth2"
 	"auth/services"
+	"auth/utils"
 	"net/http"
 	"time"
 
@@ -41,10 +42,8 @@ func CallbackOauth(ctx echo.Context) error {
 
 	// エラー処理
 	if err != nil {
-		// エラー処理
-		logger.PrintErr(err)
-
-		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+		// html を返す
+		return ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err)
 	}
 
 	// ユーザー
@@ -63,7 +62,8 @@ func CallbackOauth(ctx echo.Context) error {
 
 	// エラー処理
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+		// return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+		return ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err)
 	}
 
 	logger.Println(token)
