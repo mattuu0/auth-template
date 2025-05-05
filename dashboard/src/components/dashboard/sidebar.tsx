@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { LogOut, Users, Tag, Settings } from "lucide-react"
 import { logout, getCurrentUser } from "@/services/auth-service"
-import { getCurrentLoginAs, clearLoginAs } from "@/services/user-service"
 
 const navItems = [
   {
@@ -34,17 +33,13 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [currentUser, setCurrentUser] = useState<any>(null)
-  const [loginAsUser, setLoginAsUser] = useState<any>(null)
 
-  // 現在のユーザー情報とログイン中のユーザー情報を取得
+  // 現在のユーザー情報を取得
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const user = await getCurrentUser()
         setCurrentUser(user)
-
-        const loginAs = await getCurrentLoginAs()
-        setLoginAsUser(loginAs)
       } catch (error) {
         console.error("ユーザー情報の取得に失敗しました:", error)
       }
@@ -79,18 +74,6 @@ export function Sidebar() {
       router.push("/login")
     } catch (error) {
       console.error("ログアウトに失敗しました:", error)
-    }
-  }
-
-  // ログイン中のユーザーをクリア
-  const handleClearLoginAs = async () => {
-    try {
-      await clearLoginAs()
-      setLoginAsUser(null)
-      // 現在のページをリロード
-      router.refresh()
-    } catch (error) {
-      console.error("ログイン中のユーザーのクリアに失敗しました:", error)
     }
   }
 
@@ -167,42 +150,6 @@ export function Sidebar() {
             })}
           </ul>
         </nav>
-
-        {/* ログイン中のユーザー情報 */}
-        {loginAsUser && (
-          <div className="border-t p-2">
-            <div
-              className={cn(
-                "text-xs text-amber-600 bg-amber-50 rounded p-2 mb-2 flex items-center justify-between",
-                isCollapsed ? "hidden" : "",
-              )}
-            >
-              <div className="w-full text-center">
-                <span>{loginAsUser.name}</span>
-                <br />
-                <span>としてログイン中</span>
-              </div>
-              <Button variant="ghost" size="sm" className="h-6 px-2" onClick={handleClearLoginAs}>
-                解除
-              </Button>
-            </div>
-            {isCollapsed && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-full h-8 mb-2 bg-amber-50 text-amber-600 border-amber-200"
-                    onClick={handleClearLoginAs}
-                  >
-                    <Users className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">{loginAsUser.name}としてログイン中（解除）</TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-        )}
 
         <div className="border-t p-2">
           <Tooltip delayDuration={0}>

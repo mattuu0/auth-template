@@ -1,5 +1,7 @@
 "use client"
 
+import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
 import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
@@ -8,7 +10,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
@@ -179,6 +180,9 @@ export function UserTable() {
       setActionInProgress(userId + "_login")
       // サービスを呼び出してユーザーとしてログイン
       await loginAsUser(userId)
+
+      // カスタムイベントを発行して他のコンポーネントに通知
+      window.dispatchEvent(new Event("loginAsUserChanged"))
 
       // ページをリロードして変更を反映
       router.refresh()

@@ -1,17 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { PageHeader } from "@/components/dashboard/page-header"
 import { SessionTable } from "@/components/dashboard/session-table"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Search, ArrowLeft } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getSessions, searchSessions, getSessionsByUserId } from "@/services/session-service"
 import { getUsers } from "@/services/user-service"
 
 export default function SessionsPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const userId = searchParams.get("userId")
 
   const [sessions, setSessions] = useState<any[]>([])
@@ -89,9 +91,20 @@ export default function SessionsPage() {
     return () => clearTimeout(timer)
   }, [searchTerm, selectedUser])
 
+  // 前のページに戻る
+  const handleGoBack = () => {
+    router.back()
+  }
+
   return (
     <div className="space-y-6">
-      <PageHeader title="セッション管理" description="ユーザーのセッション情報を管理します" />
+      <div className="flex items-center justify-between">
+        <PageHeader title="セッション管理" description="ユーザーのセッション情報を管理します" />
+        <Button variant="outline" onClick={handleGoBack} className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          戻る
+        </Button>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
