@@ -3,6 +3,7 @@ package services
 import (
 	"auth/logger"
 	"auth/models"
+	"os"
 	"strconv"
 	"time"
 )
@@ -96,6 +97,22 @@ func UpdateUser(args UpdateUserData) error {
 
 // ここからユーザー削除
 func DeleteUser(userid string) error {
+	// user を取得する
+	user,result := models.GetUser(userid)
+
+	// エラー処理 
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// 画像ファイルを削除する
+	err := os.Remove(IconDir + "/" + user.UserID + ".png")
+
+	// エラー処理
+	if err != nil {
+		return err
+	}
+
 	// ユーザーを削除する
 	return models.DeleteUser(userid)
 }

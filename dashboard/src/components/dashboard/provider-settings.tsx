@@ -221,14 +221,6 @@ export function ProviderSettings() {
     navigator.clipboard.writeText(text)
   }
 
-  // プロバイダ名の表示名マッピング
-  const providerDisplayNames: Record<string, string> = {
-    google: "Google",
-    discord: "Discord",
-    github: "GitHub",
-    microsoft: "Microsoft",
-  }
-
   // ローディング中の表示
   if (loading) {
     return (
@@ -259,7 +251,7 @@ export function ProviderSettings() {
         <TabsList className="grid w-full grid-cols-6">
           {providers.map((provider) => (
             <TabsTrigger key={provider.ProviderCode} value={provider.ProviderCode}>
-              {providerDisplayNames[provider.ProviderCode]}
+              {provider.ProviderName}
             </TabsTrigger>
           ))}
           <TabsTrigger value="basic">Basic</TabsTrigger>
@@ -269,8 +261,8 @@ export function ProviderSettings() {
         {providers.map((provider) => (
           <TabsContent key={provider.ProviderCode} value={provider.ProviderCode}>
             <OAuthProviderCard
-              title={`${providerDisplayNames[provider.ProviderCode]}認証`}
-              description={`${providerDisplayNames[provider.ProviderCode]}アカウントでのログインをユーザーにOAuthで提供します。`}
+              title={`${provider.ProviderName}認証`}
+              description={`${provider.ProviderName}アカウントでのログインをユーザーにOAuthで提供します。`}
               provider={provider}
               onToggle={() => handleToggleProvider(provider.ProviderCode)}
               onUpdateClientId={(value) => updateClientId(provider.ProviderCode, value)}
