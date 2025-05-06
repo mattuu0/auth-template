@@ -82,3 +82,31 @@ func GetAllUsers(ctx echo.Context) (error) {
 
 	return ctx.JSON(http.StatusOK, users)
 }
+
+// BAN を切り替える
+func ToggleBan(ctx echo.Context) error {
+	// bind する
+	banArgs := services.BanArgs{}
+
+	if err := ctx.Bind(&banArgs); err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusBadRequest,echo.Map{
+			"result" : err.Error(),
+		})
+	}
+
+	// BAN を切り替える
+	err := services.ToggleBan(banArgs)
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusInternalServerError,echo.Map{
+			"result" : err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK,echo.Map{
+		"result" : "success",
+	})
+}

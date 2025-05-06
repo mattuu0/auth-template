@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"auth/logger"
+	"auth/models"
 	"auth/services"
 	"net/http"
 
@@ -22,6 +23,20 @@ func RequireAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			logger.PrintErr(err)
 			return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "unauthorized"})
+		}
+
+		// ユーザーを取得する
+		user,result := models.GetUser(session.UserID)
+
+		// エラー処理
+		if result.Error != nil {
+			logger.PrintErr(result.Error)
+			return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "unauthorized"})
+		}
+
+		// ユーザーがBANされている時
+		if user.IsBanned == 1 {
+			return ctx.JSON(http.StatusForbidden, echo.Map{"error": "Your account has been banned"})
 		}
 
 		// セッションを設定

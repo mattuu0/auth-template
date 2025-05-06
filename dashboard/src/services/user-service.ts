@@ -135,6 +135,24 @@ export async function toggleUserBan(userId: string): Promise<User> {
   const index = users.findIndex((u) => u.id === userId)
   if (index !== -1) {
     users[index].banned = !users[index].banned
+
+    // リクエストを送る
+    const req = await fetch("/auth/api/user/ban",{
+      method: "PUT",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "IsBanned" : users[index].banned,
+        "UserID" : userId,
+      })
+    });
+
+    // エラー処理
+    if (!req.ok) {
+      throw new Error("failed to toggle ban")
+    }
+
     return users[index]
   }
 

@@ -3,6 +3,7 @@ package services
 import (
 	"auth/models"
 	"auth/utils"
+	"errors"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -59,6 +60,11 @@ func NewSession(args SessionArgs) (string, error) {
 	// エラー処理
 	if result.Error != nil {
 		return "", result.Error
+	}
+
+	// BANされている時
+	if user.IsBanned == 1 {
+		return "",errors.New("Your account has been banned")
 	}
 
 	// セッションIDを生成

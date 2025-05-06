@@ -98,9 +98,9 @@ func UpdateUser(args UpdateUserData) error {
 // ここからユーザー削除
 func DeleteUser(userid string) error {
 	// user を取得する
-	user,result := models.GetUser(userid)
+	user, result := models.GetUser(userid)
 
-	// エラー処理 
+	// エラー処理
 	if result.Error != nil {
 		return result.Error
 	}
@@ -178,3 +178,33 @@ func FormatUnixTimestampToString(timestamp int64, layout string) string {
 	// time.Time を指定されたレイアウトで文字列にフォーマット
 	return t.Format(layout)
 }
+
+// ここから BAN の処理
+type BanArgs struct {
+	IsBanned bool   //BANするかどうか
+	UserID   string //ユーザーID
+}
+
+func ToggleBan(args BanArgs) error {
+	// ユーザーを取得する
+	user,result := models.GetUser(args.UserID)
+
+	// エラー処理
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// BAN を切り替え
+	if args.IsBanned {
+		// BANする
+		user.IsBanned = 1
+	} else {
+		// BAN解除
+		user.IsBanned = 0
+	}
+
+	// ユーザーを更新する
+	return models.UpdateUser(user)
+}
+
+// ここまで

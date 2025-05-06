@@ -79,6 +79,9 @@ func SetupRouter(router *echo.Echo) {
 
 			// ユーザーを削除する
 			userg.DELETE("",controllers.DeleteOauth)
+
+			// BAN を切り替える
+			userg.PUT("/ban",controllers.ToggleBan)
 		}
 
 		// プロバイダグループ
