@@ -43,11 +43,17 @@ func CallbackOauth(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		// html を返す
-		return utils.ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err)
+		return utils.ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err,oauthResponse.IsPopup)
 	}
 
 	// ユーザー
 	user := oauthResponse.User
+
+	// popup
+	isPopup := "0"
+	if oauthResponse.IsPopup {
+		isPopup = "1"
+	}
 
 	// ユーザーを作成
 	token, err := services.LoginOauthUser(services.OauthUserArgs{
@@ -63,7 +69,7 @@ func CallbackOauth(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		// return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
-		return utils.ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err)
+		return utils.ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err,oauthResponse.IsPopup)
 	}
 
 	logger.Println(token)
@@ -77,12 +83,6 @@ func CallbackOauth(ctx echo.Context) error {
 	// モバイル場合
 	if oauthResponse.IsMobile {
 		return ctx.Redirect(http.StatusFound, "authkit://?token="+token)
-	}
-
-	// popup
-	isPopup := "0"
-	if oauthResponse.IsPopup {
-		isPopup = "1"
 	}
 
 	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{"token": token,"isPopup" : isPopup})

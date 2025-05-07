@@ -280,9 +280,8 @@
             </p>
         </div>
 
-        <p>以下のリンクからページを移動してください。</p>
-
-        <a href="/statics/" class="back-link">メイン画面に戻る</a>
+        <div id="IsPopup" style="display: none;">{{.isPopup}}</div>
+        <a href="/statics/" id="BackButton" class="back-link"></a>
     </div>
 
     <script>
@@ -290,7 +289,35 @@
         const toggleButton = document.getElementById('toggle-message');
         const errorIdSpan = document.getElementById('error-id');
         const httpStatusSpan = document.getElementById('http-status');
+
+        const BackButton = document.getElementById("BackButton");
+        const IsPopup = document.getElementById("IsPopup");
+
         let initialHeightEm = 6; // 初期高さをemで指定 (CSSと合わせる)
+
+        // ボタンを押したときの処理
+        BackButton.addEventListener("click",function(evt) {
+            // 既存の処理を無効か
+            evt.preventDefault();
+
+            // ポップアップの判定
+            if (IsPopup.textContent == "1") {
+                // ポップアップを閉じる
+                window.close();
+                return;
+            }
+
+            // それ以外なら遷移
+            window.location.href = "/statics/";
+        });
+
+        // もしポップアップなら閉じるに変更
+        // ポップアップの判定
+        if (IsPopup.textContent == "1") {
+            BackButton.textContent = "閉じる";
+        } else {
+            BackButton.textContent = "メイン画面に戻る";
+        }
 
         // エラーメッセージ表示/非表示の制御関数
         const updateToggleVisibility = () => {
