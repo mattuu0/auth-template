@@ -6,9 +6,15 @@ WORKDIR /sslkeys
 # openssl を追加
 RUN apk add openssl
 
+# dos2unix を追加
+RUN apk add dos2unix
+
 COPY ./genkey.sh /genkey.sh
+
+# 改行コードを変更
+RUN dos2unix /genkey.sh
 
 RUN chmod +x /genkey.sh
 
 # 鍵を生成
-CMD ["/genkey.sh"]
+CMD ["/bin/sh","/genkey.sh"]
