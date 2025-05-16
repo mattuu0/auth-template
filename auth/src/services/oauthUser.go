@@ -3,6 +3,7 @@ package services
 import (
 	"auth/models"
 	"auth/utils"
+	"errors"
 )
 
 type OauthUserArgs struct {
@@ -23,12 +24,23 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 	// 現在時刻を取得
 	now := utils.NowTime()
 
+	// メールアドレスがない時
+	if args.Email == "" {
+		return "", errors.New("メールアドレスの取得に失敗しました")
+	}
+
 	// ユーザーを取得する
 	user, result := models.GetUserByEmail(args.Email)
 
 	// 存在する時
 	if result.IsExists {
 		// ユーザーが取得できた時
+
+		// プロバイダが同じかどうか
+		if user.ProvUID != args.ProviderUserID {
+			return "", errors.New("同一プロバイダのユーザーが見つかりません")
+		}
+
 		// セッションを追加する
 		token, err := NewSession(SessionArgs{
 			UserID:    user.UserID,

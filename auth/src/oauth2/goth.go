@@ -161,7 +161,7 @@ func UseProviders() {
 	// エラー処理 と 有効かどうか
 	if err == nil && githubProvider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
-		providers = append(providers, github.New(githubProvider.ClientID, githubProvider.ClientSecret, githubProvider.CallbackURL))
+		providers = append(providers, github.New(githubProvider.ClientID, githubProvider.ClientSecret, githubProvider.CallbackURL,"read:user","user:email"))
 	}
 
 	// microsoft
