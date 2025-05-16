@@ -32,6 +32,32 @@ class AuthKit {
         }
     }
 
+    // ログアウトする関数
+    async Logout() {
+        // ログアウトする (リフレッシュトークンでログアウトする)
+        const req = await fetch("/auth/logout", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization" : localStorage.getItem("token")
+            }
+        });
+
+        // 失敗した場合
+        if (!req.ok) {
+            return new Error("Logout failed");
+        }
+
+        // ログアウトしたらアクセストークンも削除
+        window.sessionStorage.removeItem("actoken");
+        window.sessionStorage.removeItem("actime");
+
+        // ローカルストレージからもトークンを削除
+        localStorage.removeItem("token");
+
+        return;
+    }
+
     async OauthLogin(provider,LoginCallback) {
         // ポップアップ
         if (provider == "discord") {

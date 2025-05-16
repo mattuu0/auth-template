@@ -20,6 +20,22 @@ async function Init() {
         document.getElementById('user-email').textContent = userData.email;
         document.getElementById('prov-code').textContent = userData.prov_code;
         document.getElementById('prov-uid').textContent = userData.prov_uid;
+
+        // ログアウトボタン取得
+        const logoutButton = document.getElementById('logout-button');
+
+        // ログアウトボタンをクリックしたらログアウト
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await auth.Logout();
+                // ログインにリダイレクト
+                window.location.href = './login.html';
+            } catch (error) {
+                console.error(error);
+                // ログインにリダイレクト
+                window.location.href = './login.html';
+            }
+        });
     } catch (error) {
         console.error(error);
         // ログインにリダイレクト
