@@ -24,6 +24,12 @@ tasks:
       - docker compose up -d --build
     silent: true
 
+  # auth にアタッチ
+  atauth:
+    cmds:
+      - docker compose logs auth
+      - docker compose attach auth
+
   # データベース接続
   dbshell:
     cmds:

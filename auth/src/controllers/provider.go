@@ -48,7 +48,8 @@ func GetOauthProviders(ctx echo.Context) error {
 // basic プロバイダ更新
 func BasicUpdate(ctx echo.Context) error {
 	// Basic 認証を更新する
-	services.UpdateBasicProvider()
+	// services.UpdateBasicProvider()
+	return nil
 }
 
 // プロバイダを更新
