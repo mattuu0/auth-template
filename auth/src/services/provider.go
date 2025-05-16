@@ -64,3 +64,12 @@ func UpdateOauthProviders(providers []OauthProvider) error {
 
 	return nil
 }
+
+// Basic プロバイダ更新
+type UpdateBasicProviderArgs struct {
+	
+}
+
+func UpdateBasicProvider() {
+
+}

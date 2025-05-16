@@ -45,6 +45,12 @@ func GetOauthProviders(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK,providers)
 }
 
+// basic プロバイダ更新
+func BasicUpdate(ctx echo.Context) error {
+	// Basic 認証を更新する
+	services.UpdateBasicProvider()
+}
+
 // プロバイダを更新
 func UpdateOauthProviders(ctx echo.Context) error {
 	bindData := []services.OauthProvider{}
