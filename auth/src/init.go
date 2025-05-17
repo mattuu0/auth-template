@@ -40,11 +40,11 @@ func SetupRouter(router *echo.Echo) {
 
 	// ルーティング設定
 	// ベーシックユーザーグループ
-	basicg := router.Group("/basic")
-	{
-		basicg.POST("/signup", controllers.CreateBasicUser)
-		basicg.POST("/login", controllers.LoginBasicUser)
-	}
+	// basicg := router.Group("/basic")
+	// {
+	// 	basicg.POST("/signup", controllers.CreateBasicUser)
+	// 	basicg.POST("/login", controllers.LoginBasicUser)
+	// }
 
 	// アイコンフォルダを配信する
 	router.Static("/assets", "./assets/icons")
@@ -58,6 +58,16 @@ func SetupRouter(router *echo.Echo) {
 	// ログアウト
 	router.POST("/logout",controllers.Logout,middlewares.RequireAuth)
 
+	// admin グループ
+	adming := router.Group("/admin")
+	{
+		adming.POST("/signup", controllers.CreateAdminUser)
+		adming.POST("/login", controllers.LoginAdminUser)
+		adming.GET("/status", controllers.GetAdminStatus)
+		adming.GET("/info", controllers.GetAdminInfo,middlewares.RequireAdminAuth)
+		adming.POST("/logout",controllers.AdminLogout,middlewares.RequireAdminAuth)
+	}
+
 	// oauth グループ
 	oauthg := router.Group("/oauth")
 	{
@@ -68,6 +78,9 @@ func SetupRouter(router *echo.Echo) {
 	// api グループ
 	apig := router.Group("/api")
 	{
+		// admin ミドルウェア設定
+		apig.Use(middlewares.RequireAdminAuth)
+
 		// ユーザーのグループ作成
 		userg := apig.Group("/user")
 		{
@@ -100,7 +113,7 @@ func SetupRouter(router *echo.Echo) {
 			providerg.POST("", controllers.UpdateProviders)
 
 			// basic プロバイダ更新
-			providerg.PUT("/basic",controllers.BasicUpdate)
+			// providerg.PUT("/basic",controllers.BasicUpdate)
 		}
 
 		// ラベルグループを作る

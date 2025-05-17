@@ -256,14 +256,14 @@ export function ProviderSettings() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-4">
           {providers.map((provider) => (
             <TabsTrigger key={provider.ProviderCode} value={provider.ProviderCode}>
               {providerDisplayNames[provider.ProviderCode]}
             </TabsTrigger>
           ))}
-          <TabsTrigger value="basic">Basic</TabsTrigger>
-          <TabsTrigger value="system">システム</TabsTrigger>
+          {/* <TabsTrigger value="basic">Basic</TabsTrigger>
+          <TabsTrigger value="system">システム</TabsTrigger> */}
         </TabsList>
 
         {providers.map((provider) => (

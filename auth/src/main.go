@@ -1,13 +1,13 @@
 package main
 
 import (
-	"auth/oauth2"
 	"auth/models"
+	"auth/oauth2"
 	"auth/services"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/labstack/echo/v4"
 )
 
 func Init() {
