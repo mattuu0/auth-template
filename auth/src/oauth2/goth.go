@@ -132,6 +132,8 @@ func contextWithProviderName(ctx echo.Context, providerName string) *http.Reques
 }
 
 func UseProviders() {
+	logger.Println("プロバイダを更新する")
+
 	// 認証プロバイダー
 	providers := []goth.Provider{}
 
@@ -175,7 +177,7 @@ func UseProviders() {
 	// エラー処理 と 有効かどうか
 	if err == nil && microsoftProvider.IsEnabled == 1 {
 		// 認証プロバイダーに追加
-		providers = append(providers, microsoftonline.New(microsoftProvider.ClientID, microsoftProvider.ClientSecret, microsoftProvider.CallbackURL))
+		providers = append(providers, microsoftonline.New(microsoftProvider.ClientID, microsoftProvider.ClientSecret, microsoftProvider.CallbackURL,"openid","email","profile","offline_access"))
 	}
 
 	// discord
@@ -191,6 +193,9 @@ func UseProviders() {
 		// 認証プロバイダーに追加
 		providers = append(providers, discord.New(discordProvider.ClientID, discordProvider.ClientSecret, discordProvider.CallbackURL,"email","identify"))
 	}
+
+	// プロバイダをリセット
+	goth.ClearProviders()
 
 	// 認証プロバイダーを設定
 	goth.UseProviders(providers...)
