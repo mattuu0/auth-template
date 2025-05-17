@@ -3,7 +3,6 @@ FROM node:lts-slim as Develop
 WORKDIR /root/src
 
 COPY ./src/package.json .
-COPY ./src/package-lock.json .
 
 RUN npm install --force --verbose
 
