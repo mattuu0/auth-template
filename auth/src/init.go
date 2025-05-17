@@ -98,6 +98,9 @@ func SetupRouter(router *echo.Echo) {
 
 			// プロバイダー一覧を更新する
 			providerg.POST("", controllers.UpdateProviders)
+
+			// basic プロバイダ更新
+			providerg.PUT("/basic",controllers.BasicUpdate)
 		}
 
 		// ラベルグループを作る

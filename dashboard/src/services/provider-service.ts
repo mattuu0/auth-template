@@ -80,6 +80,7 @@ export async function getBasicSettings(): Promise<{
   enabled: boolean
   hashRounds: number
 }> {
+  
   // 実際の実装ではAPIからデータを取得
   return mockBasicSettings
 }

@@ -2,8 +2,9 @@ FROM node:lts-slim as Develop
 
 WORKDIR /root/src
 
-# COPY ./src .
+COPY ./src/package.json .
+COPY ./src/package-lock.json .
 
-# RUN npm install --force --verbose
+RUN npm install --force --verbose
 
-# CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev"]
