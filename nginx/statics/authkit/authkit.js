@@ -114,7 +114,7 @@ class AuthKit {
     }
 
     openPopup(url) {
-        window.open(url + "?popup=1", "popupWindow", "width=600,height=600");
+        window.open(url + "?popup=1", "popupWindow", "width=1200,height=800");
 
         window.addEventListener("message", (event) => {
             if (event.data == "Login-Success") {
