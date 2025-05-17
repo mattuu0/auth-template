@@ -18,6 +18,8 @@ import { cn, sanitizeInput } from "@/lib/utils"
 import { createUser } from "@/services/user-service"
 import { getLabels } from "@/services/label-service"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Card, CardContent } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 
 interface UserCreateButtonProps {
   onUserCreated?: () => void
@@ -209,9 +211,9 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
           ユーザー作成
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>ユーザー作成</DialogTitle>
+          <DialogTitle className="text-xl">新規ユーザー作成</DialogTitle>
         </DialogHeader>
 
         {error && (
@@ -223,199 +225,250 @@ export function UserCreateButton({ onUserCreated }: UserCreateButtonProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 左側カラム */}
-          <div className="space-y-4">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={previewImage || "/placeholder.svg"} alt={name} />
-                  <AvatarFallback>{name.substring(0, 2) || "U"}</AvatarFallback>
-                </Avatar>
-                <Button
-                  type="button"
-                  size="icon"
-                  className="absolute bottom-0 right-0 rounded-full bg-primary text-primary-foreground"
-                  onClick={triggerFileInput}
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
-                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-              </div>
-              <div className="text-center text-sm text-muted-foreground">クリックしてアイコン画像をアップロード</div>
-            </div>
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={previewImage || "/placeholder.svg"} alt={name} />
+                      <AvatarFallback>{name.substring(0, 2) || "U"}</AvatarFallback>
+                    </Avatar>
+                    <Button
+                      type="button"
+                      size="icon"
+                      className="absolute bottom-0 right-0 rounded-full bg-primary text-primary-foreground"
+                      onClick={triggerFileInput}
+                    >
+                      <Camera className="h-4 w-4" />
+                    </Button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                  <div className="text-center text-sm text-muted-foreground">
+                    クリックしてアイコン画像をアップロード
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="grid gap-2">
-              <Label htmlFor="user-id">ユーザーID</Label>
-              <div className="flex">
-                <Input id="user-id" value={userId} readOnly className="rounded-r-none font-mono text-sm" />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="rounded-l-none"
-                  onClick={generateRandomUserId}
-                  title="新しいIDを生成"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">ユーザーIDはシステム内で一意の識別子です</p>
-            </div>
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <h3 className="text-sm font-medium mb-2">基本情報</h3>
 
-            <div className="grid gap-2">
-              <Label htmlFor="user-name">ユーザー名</Label>
-              <Input
-                id="user-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="ユーザー名を入力"
-                required
-              />
-            </div>
+                <div className="grid gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="user-id">ユーザーID</Label>
+                    <div className="flex">
+                      <Input id="user-id" value={userId} readOnly className="rounded-r-none font-mono text-sm" />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="rounded-l-none"
+                        onClick={generateRandomUserId}
+                        title="新しいIDを生成"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">ユーザーIDはシステム内で一意の識別子です</p>
+                  </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="user-email">メールアドレス</Label>
-              <Input
-                id="user-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@mail.com"
-                required
-              />
-            </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="user-name">
+                      ユーザー名 <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="user-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="ユーザー名を入力"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="user-email">
+                      メールアドレス <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="user-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="example@mail.com"
+                      required
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* 右側カラム */}
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="user-password">パスワード</Label>
-              <div className="relative">
-                <Input
-                  id="user-password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="パスワードを入力"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">8文字以上で入力してください</p>
-            </div>
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <h3 className="text-sm font-medium mb-2">認証情報</h3>
 
-            <div className="grid gap-2">
-              <Label htmlFor="user-confirm-password">パスワード（確認）</Label>
-              <div className="relative">
-                <Input
-                  id="user-confirm-password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="パスワードを再入力"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid gap-2 mt-4">
-              <Label>ラベル</Label>
-              {loadingLabels ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="h-6 w-16 rounded-full bg-gray-200 animate-pulse"></div>
-                    <div className="h-6 w-20 rounded-full bg-gray-200 animate-pulse"></div>
-                  </div>
-                  <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex flex-wrap gap-2 mb-2 min-h-[36px]">
-                    {selectedLabels.map((labelId) => {
-                      const labelInfo = availableLabels.find((label) => label.id === labelId)
-                      return labelInfo ? (
-                        <Badge
-                          key={labelId}
-                          className="pl-2 pr-1 py-1"
-                          style={{
-                            backgroundColor: labelInfo.color || "#6b7280",
-                            color: labelInfo.color ? getTextColor(labelInfo.color) : "#ffffff",
-                          }}
-                        >
-                          {labelInfo.name}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 ml-1"
-                            onClick={() => handleRemoveLabel(labelId)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      ) : null
-                    })}
-                  </div>
-                  <Popover open={commandOpen} onOpenChange={setCommandOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
-                        <span>ラベルを追加</span>
-                        <Plus className="h-4 w-4 opacity-50" />
+                <div className="grid gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="user-password">
+                      パスワード <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="user-password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="パスワードを入力"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0" align="start" side="bottom" sideOffset={5}>
-                      <Command>
-                        <CommandInput placeholder="ラベルを検索..." />
-                        <CommandList>
-                          <CommandEmpty>ラベルが見つかりません</CommandEmpty>
-                          <CommandGroup>
-                            {availableLabels
-                              .filter((label) => !selectedLabels.includes(label.id))
-                              .map((label) => (
-                                <CommandItem
-                                  key={label.id}
-                                  onSelect={() => {
-                                    setSelectedLabels([...selectedLabels, label.id])
-                                    setCommandOpen(false)
+                    </div>
+                    <p className="text-xs text-muted-foreground">8文字以上で入力してください</p>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="user-confirm-password">
+                      パスワード（確認） <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="user-confirm-password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="パスワードを再入力"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <h3 className="text-sm font-medium mb-2">ラベル設定</h3>
+
+                <div className="grid gap-3">
+                  <div className="grid gap-2">
+                    <Label>ラベル</Label>
+                    {loadingLabels ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-16 rounded-full bg-gray-200 animate-pulse"></div>
+                          <div className="h-6 w-20 rounded-full bg-gray-200 animate-pulse"></div>
+                        </div>
+                        <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap gap-2 mb-2 min-h-[36px] border rounded-md p-2 bg-gray-50">
+                          {selectedLabels.length === 0 ? (
+                            <span className="text-sm text-muted-foreground">選択されたラベルはありません</span>
+                          ) : (
+                            selectedLabels.map((labelId) => {
+                              const labelInfo = availableLabels.find((label) => label.id === labelId)
+                              return labelInfo ? (
+                                <Badge
+                                  key={labelId}
+                                  className="pl-2 pr-1 py-1"
+                                  style={{
+                                    backgroundColor: labelInfo.color || "#6b7280",
+                                    color: labelInfo.color ? getTextColor(labelInfo.color) : "#ffffff",
                                   }}
                                 >
-                                  <Badge
-                                    className={cn("mr-2")}
-                                    style={{
-                                      backgroundColor: label.color,
-                                      color: getTextColor(label.color),
-                                    }}
+                                  {labelInfo.name}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 ml-1"
+                                    onClick={() => handleRemoveLabel(labelId)}
                                   >
-                                    {label.name}
-                                  </Badge>
-                                  <span>{label.name}</span>
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </>
-              )}
-            </div>
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </Badge>
+                              ) : null
+                            })
+                          )}
+                        </div>
+                        <Popover open={commandOpen} onOpenChange={setCommandOpen}>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                              <span>ラベルを追加</span>
+                              <Plus className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="p-0" align="start" side="bottom" sideOffset={5}>
+                            <Command>
+                              <CommandInput placeholder="ラベルを検索..." />
+                              <CommandList>
+                                <CommandEmpty>ラベルが見つかりません</CommandEmpty>
+                                <CommandGroup>
+                                  {availableLabels
+                                    .filter((label) => !selectedLabels.includes(label.id))
+                                    .map((label) => (
+                                      <CommandItem
+                                        key={label.id}
+                                        onSelect={() => {
+                                          setSelectedLabels([...selectedLabels, label.id])
+                                          setCommandOpen(false)
+                                        }}
+                                      >
+                                        <Badge
+                                          className={cn("mr-2")}
+                                          style={{
+                                            backgroundColor: label.color,
+                                            color: getTextColor(label.color),
+                                          }}
+                                        >
+                                          {label.name}
+                                        </Badge>
+                                        <span>{label.name}</span>
+                                      </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-        <DialogFooter className="mt-4">
+
+        <Separator className="my-4" />
+
+        <DialogFooter className="flex justify-between sm:justify-end gap-2">
           <Button variant="outline" onClick={() => setOpen(false)} disabled={creating}>
             キャンセル
           </Button>
