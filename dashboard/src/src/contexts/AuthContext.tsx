@@ -56,7 +56,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true)
       setError(null)
       const user = await import("../services/auth-service").then((module) => module.login(email, password))
-      setUser(user)
+      
+      // setUser(user)
     } catch (err: any) {
       setError(err.message || "ログインに失敗しました")
       throw err

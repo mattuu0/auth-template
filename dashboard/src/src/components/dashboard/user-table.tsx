@@ -227,7 +227,7 @@ export function UserTable() {
       <TableRow key={`skeleton-row-${index}`}>
         {columns
           .filter((c) => c.visible)
-          .map((column, colIndex) => (
+          .map((column, _colIndex) => (
             <TableCell key={`skeleton-${index}-${column.id}`}>
               {column.id === "avatar" ? (
                 <Skeleton className="h-8 w-8 rounded-full" />

@@ -1,7 +1,7 @@
 "use client"
 
 import { type ReactNode, useEffect, useState } from "react"
-import { Navigate, useLocation } from "react-router-dom"
+import { Navigate, useLocation, useNavigate } from "react-router-dom"
 import { isAuthenticated } from "../../services/auth-service"
 
 interface ProtectedRouteProps {
@@ -12,6 +12,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation()
   const [isChecking, setIsChecking] = useState(true)
   const [isAuth, setIsAuth] = useState(false)
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -40,7 +41,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // 認証されていない場合はログインページにリダイレクト
   if (!isAuth) {
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />
+    return <Navigate to={`./login?redirect=${encodeURIComponent(location.pathname)}`} replace />
   }
 
   // 認証されている場合は子コンポーネントを表示

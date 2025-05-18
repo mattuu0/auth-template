@@ -17,14 +17,14 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <ProtectedRoute>
               <DashboardLayout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard/users" replace />} />
+          <Route index element={<Navigate to="/users" replace />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="labels" element={<LabelsPage />} />
           <Route path="providers" element={<ProvidersPage />} />

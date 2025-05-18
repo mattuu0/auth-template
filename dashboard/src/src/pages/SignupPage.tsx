@@ -150,7 +150,7 @@ export default function SignupPage() {
                 )}
               </Button>
               <div className="text-center text-sm">
-                <Link to="/login" className="text-blue-600 hover:text-blue-500">
+                <Link to="./login" className="text-blue-600 hover:text-blue-500">
                   ログインページに戻る
                 </Link>
               </div>

@@ -5,6 +5,7 @@ import (
 	"auth/middlewares"
 	"html/template"
 	"io"
+	"path/filepath"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -46,6 +47,28 @@ func SetupRouter(router *echo.Echo) {
 	// 	basicg.POST("/login", controllers.LoginBasicUser)
 	// }
 
+	buildDir := "dashboard" // React のビルド出力ディレクトリを指定
+
+	// サブパスの設定 (/_/ 配下に React アプリを配信)
+	subPath := "/_"
+
+	// 明示的なアセット (JS/CSS/画像など) の配信設定
+	// 相対パスで配信するため、subPath 配下に設定
+	router.Static(subPath+"/assets", filepath.Join(buildDir, "assets"))
+
+	// subPath 配下のルートにアクセスがあった場合も index.html を返す
+	router.GET(subPath, func(ctx echo.Context) error {
+		indexPath := filepath.Join(buildDir, "index.html")
+		return ctx.File(indexPath)
+	})
+
+	// SPA 対応: すべての subPath 配下の不明なルートを index.html にルーティング
+	router.GET(subPath+"/*", func(ctx echo.Context) error {
+		// index.html を返す
+		indexPath := filepath.Join(buildDir, "index.html")
+		return ctx.File(indexPath)
+	})
+
 	// アイコンフォルダを配信する
 	router.Static("/assets", "./assets/icons")
 
@@ -56,7 +79,7 @@ func SetupRouter(router *echo.Echo) {
 	router.GET("/token", controllers.GetToken, middlewares.RequireAuth)
 
 	// ログアウト
-	router.POST("/logout",controllers.Logout,middlewares.RequireAuth)
+	router.POST("/logout", controllers.Logout, middlewares.RequireAuth)
 
 	// admin グループ
 	adming := router.Group("/admin")
@@ -64,15 +87,15 @@ func SetupRouter(router *echo.Echo) {
 		adming.POST("/signup", controllers.CreateAdminUser)
 		adming.POST("/login", controllers.LoginAdminUser)
 		adming.GET("/status", controllers.GetAdminStatus)
-		adming.GET("/info", controllers.GetAdminInfo,middlewares.RequireAdminAuth)
-		adming.POST("/logout",controllers.AdminLogout,middlewares.RequireAdminAuth)
+		adming.GET("/info", controllers.GetAdminInfo, middlewares.RequireAdminAuth)
+		adming.POST("/logout", controllers.AdminLogout, middlewares.RequireAdminAuth)
 	}
 
 	// oauth グループ
 	oauthg := router.Group("/oauth")
 	{
-		oauthg.GET("/:provider",controllers.StartOauth)
-		oauthg.GET("/:provider/callback",controllers.CallbackOauth)
+		oauthg.GET("/:provider", controllers.StartOauth)
+		oauthg.GET("/:provider/callback", controllers.CallbackOauth)
 	}
 
 	// api グループ
@@ -91,10 +114,10 @@ func SetupRouter(router *echo.Echo) {
 			userg.PUT("", controllers.UpdateUser)
 
 			// ユーザーを削除する
-			userg.DELETE("",controllers.DeleteOauth)
+			userg.DELETE("", controllers.DeleteOauth)
 
 			// BAN を切り替える
-			userg.PUT("/ban",controllers.ToggleBan)
+			userg.PUT("/ban", controllers.ToggleBan)
 		}
 
 		// プロバイダグループ
@@ -104,10 +127,10 @@ func SetupRouter(router *echo.Echo) {
 			providerg.GET("", controllers.GetProviders)
 
 			// Oauth プロバイダ一覧取得
-			providerg.GET("/oauth",controllers.GetOauthProviders)
+			providerg.GET("/oauth", controllers.GetOauthProviders)
 
 			// Oauth プロバイダ一覧更新
-			providerg.POST("/oauth",controllers.UpdateOauthProviders)
+			providerg.POST("/oauth", controllers.UpdateOauthProviders)
 
 			// プロバイダー一覧を更新する
 			providerg.POST("", controllers.UpdateProviders)
@@ -120,16 +143,16 @@ func SetupRouter(router *echo.Echo) {
 		labelg := apig.Group("/labels")
 		{
 			// ラベルを取得する
-			labelg.GET("",controllers.GetLabels)
+			labelg.GET("", controllers.GetLabels)
 
 			// ラベルを作成する
-			labelg.POST("",controllers.CreateLabel)
+			labelg.POST("", controllers.CreateLabel)
 
 			// ラベルを更新する
-			labelg.PUT("",controllers.UpdateLabel)
+			labelg.PUT("", controllers.UpdateLabel)
 
 			// ラベルを削除する
-			labelg.DELETE("",controllers.DeleteLabel)
+			labelg.DELETE("", controllers.DeleteLabel)
 		}
 	}
 }

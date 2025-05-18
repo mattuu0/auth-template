@@ -26,6 +26,7 @@ services:
             - ./openssl/jwtKeys/private.env
             - ./config/auth.env
         volumes:
+            - distvol:/root/src/dashboard
             - ./auth/src:/root/src
         restart: always
         depends_on:
@@ -39,6 +40,7 @@ services:
             target: Develop
         tty: true
         volumes:
+            - distvol:/root/src/dist
             - ./dashboard/src:/root/src
         restart: always
 
@@ -73,3 +75,5 @@ services:
             - ./database/script/init.sql:/docker-entrypoint-initdb.d/init.sql 
 volumes:
     dbdata:
+    
+    distvol:

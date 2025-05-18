@@ -46,7 +46,7 @@ export default function LoginPage() {
       await login(email, password)
 
       // ログイン成功後、ダッシュボードにリダイレクト
-      navigate("/dashboard")
+      navigate("/users")
     } catch (err) {
       // エラーメッセージを表示
       setError("メールアドレスまたはパスワードが正しくありません。")

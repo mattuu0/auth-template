@@ -7,6 +7,7 @@ import { cn } from "../../lib/utils"
 import { Button } from "../ui/button"
 import { Sheet, SheetContent } from "../ui/sheet"
 import { useIsMobile } from "../../hooks/use-mobile"
+import { logout } from "@/services/auth-service"
 
 interface SidebarProps {
   className?: string
@@ -28,22 +29,22 @@ export function Sidebar({ className }: SidebarProps) {
   const sidebarItems = [
     {
       title: "ユーザー管理",
-      href: "/dashboard/users",
+      href: "/users",
       icon: Users,
     },
     {
       title: "ラベル管理",
-      href: "/dashboard/labels",
+      href: "/labels",
       icon: Tag,
     },
     {
       title: "プロバイダ設定",
-      href: "/dashboard/providers",
+      href: "/providers",
       icon: Settings,
     },
     {
       title: "セッション管理",
-      href: "/dashboard/sessions",
+      href: "/sessions",
       icon: Clock,
     },
   ]
@@ -80,7 +81,10 @@ export function Sidebar({ className }: SidebarProps) {
         </nav>
       </div>
       <div className="border-t p-4">
-        <Button variant="outline" className="w-full justify-start gap-2">
+        <Button variant="outline" className="w-full justify-start gap-2" onClick={() => {
+          logout();
+          window.location.reload();
+        }}>
           <LogOut className="h-4 w-4" />
           <span className={cn(isOpen ? "opacity-100" : "opacity-0", "transition-opacity duration-200")}>
             ログアウト
