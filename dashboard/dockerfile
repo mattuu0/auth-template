@@ -4,6 +4,6 @@ WORKDIR /root/src
 
 COPY ./src/package.json .
 
-RUN npm install --force --verbose
+# RUN npm install --force --verbose
 
-CMD ["npm", "run", "dev"]
+# CMD ["npm", "run", "dev"]
