@@ -195,7 +195,7 @@ export function UserTable() {
 
   // セッション一覧ページに移動
   const navigateToSessions = (userId: string) => {
-    navigate(`/dashboard/sessions?userId=${userId}`)
+    navigate(`/sessions?userId=${userId}`)
   }
 
   // ユーザー編集後の更新
