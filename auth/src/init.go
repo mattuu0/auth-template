@@ -154,5 +154,15 @@ func SetupRouter(router *echo.Echo) {
 			// ラベルを削除する
 			labelg.DELETE("", controllers.DeleteLabel)
 		}
+
+		// セッショングループを作成する
+		sessiong := apig.Group("/session")
+		{
+			// セッション一覧取得
+			sessiong.GET("", controllers.GetSessions)
+
+			// セッションを削除する
+			sessiong.DELETE("", controllers.DeleteSession)
+		}
 	}
 }

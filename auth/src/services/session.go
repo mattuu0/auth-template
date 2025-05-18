@@ -43,7 +43,7 @@ func ValidateSessionToken(tokenString string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	// トークンを検証
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		return claims["SessionID"].(string), nil
@@ -64,7 +64,7 @@ func NewSession(args SessionArgs) (string, error) {
 
 	// BANされている時
 	if user.IsBanned == 1 {
-		return "",errors.New("Your account has been banned")
+		return "", errors.New("Your account has been banned")
 	}
 
 	// セッションIDを生成
@@ -100,4 +100,52 @@ func GetSession(tokenString string) (*models.Session, error) {
 
 	// セッションを取得
 	return models.GetSession(SessionID)
+}
+
+// ここからセッション一覧
+// Session represents a user session.
+type Session struct {
+	ID        string `json:"id"`
+	UserID    string `json:"userId"`
+	IPAddress string `json:"ipAddress"`
+	UserAgent string `json:"userAgent"`
+	CreatedAt int64  `json:"createdAt"`
+	ExpiresAt int64  `json:"expiresAt"` // 最終アクティブから有効期限に変更
+	IsActive  bool   `json:"isActive"`
+}
+
+func GetAllSessions() ([]Session, error) {
+	// サービスを呼び出す
+	sessions, err := models.GetAllSessions()
+
+	// エラー処理
+	if err != nil {
+		return nil, err
+	}
+
+	// 返すデータ
+	returnSessions := make([]Session, len(sessions))
+
+	// セッションを回す
+	for i, session := range sessions {
+		returnSessions[i] = Session{
+			ID:        session.SessionID,
+			UserID:    session.UserID,
+			IPAddress: session.RemoteIP,
+			UserAgent: session.UserAgent,
+			CreatedAt: session.CreatedAt * 1000,
+			ExpiresAt: session.CreatedAt * 1000 + 1000*60*60*24*30,
+			IsActive:  true,
+		}
+	}
+
+	return returnSessions, nil
+}
+
+// ここまで
+
+// ここからセッション削除
+func DeleteSession(SessionID string) error {
+	// サービスを呼び出す
+	return models.DeleteSession(SessionID)
 }

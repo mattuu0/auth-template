@@ -42,3 +42,19 @@ func GetSession(sessionid string) (*Session, error) {
 	err := dbconn.Where(&Session{SessionID: sessionid}).First(&session).Error
 	return &session, err
 }
+
+// 全てのセッションを取得
+func GetAllSessions() ([]Session,error) {
+	var Sessions []Session
+
+	// 取得する
+	err := dbconn.Find(&Sessions).Error
+	return Sessions, err
+}
+
+// セッションを削除
+func DeleteSession(sessionid string) error {
+	// 取得する
+	err := dbconn.Where(&Session{SessionID: sessionid}).Unscoped().Delete(&Session{}).Error
+	return err
+}

@@ -11,22 +11,34 @@ export interface Session {
   isActive: boolean
 }
 
+let sessions: Session[] = []
+
 // セッション一覧を取得
 export async function getSessions(): Promise<Session[]> {
+  const req = await fetch("/auth/api/session", {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
+
+  // セッション一覧を取得
+  sessions = await req.json();
+
   // 実際の実装ではAPIからデータを取得
-  return mockSessions
+  return sessions;
 }
 
 // ユーザーIDでセッションを検索
 export async function getSessionsByUserId(userId: string): Promise<Session[]> {
   // 実際の実装ではAPIからデータを取得
-  return mockSessions.filter((session) => session.userId === userId)
+  return sessions.filter((session) => session.userId === userId)
 }
 
 // セッションを検索
 export async function searchSessions(query: string): Promise<Session[]> {
   // 実際の実装ではAPIからデータを取得
-  return mockSessions.filter(
+  return sessions.filter(
     (session) =>
       session.id.toLowerCase().includes(query.toLowerCase()) ||
       session.userId.toLowerCase().includes(query.toLowerCase()) ||
@@ -40,10 +52,23 @@ export async function deleteSession(sessionId: string): Promise<void> {
   // 実際の実装ではAPIを呼び出してセッションを削除
   console.log("Delete session:", sessionId)
 
+  // APIを送る
+  const req = await fetch("/auth/api/session", {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      "sessionId": sessionId
+    }
+  });
+
+  if (!req.ok) {
+    throw new Error("Failed to delete session")
+  }
+
   // モックデータから削除
-  const index = mockSessions.findIndex((s) => s.id === sessionId)
+  const index = sessions.findIndex((s) => s.id === sessionId)
   if (index !== -1) {
-    mockSessions.splice(index, 1)
+    sessions.splice(index, 1)
     return
   }
 
