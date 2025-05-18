@@ -74,13 +74,25 @@ export async function updateProviderSettings(
   },
 ): Promise<void> {
   console.log("Update provider settings:", providerCode, settings)
+
+  let nowData = null;
+
+  // モックデータを更新して返す
+  const index = provicers.findIndex((p) => p.ProviderCode === providerCode)
+  if (index !== -1) {
+    nowData = provicers[index];
+  };
+
+  console.log("Now Provider");
+  console.log(nowData);
+
   const updatedProvider: Provider = {
     ProviderCode: providerCode,
     ProviderName: settings.name,
     ClientID: settings.clientId,
     ClientSecret: settings.clientSecret,
     CallbackURL: settings.redirectUri,
-    IsEnabled: 1,
+    IsEnabled: nowData?.IsEnabled || 0,
   }
 
   await updateProvider(updatedProvider);

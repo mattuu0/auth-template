@@ -136,17 +136,17 @@ export function ProviderSettings() {
         <CardDescription>外部認証プロバイダの設定を管理します</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="mb-4">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="mb-4 w-full">
             {providers.map((provider) => (
-              <TabsTrigger key={provider.ProviderCode} value={provider.ProviderCode}>
-                {provider.ProviderCode.charAt(0).toUpperCase() + provider.ProviderCode.slice(1)}
+              <TabsTrigger key={provider.ProviderCode} value={provider.ProviderCode} className="w-full">
+                {provider.ProviderName.charAt(0).toUpperCase() + provider.ProviderName.slice(1)}
               </TabsTrigger>
             ))}
           </TabsList>
 
           {providers.map((provider) => (
-            <TabsContent key={provider.ProviderCode} value={provider.ProviderCode} className="space-y-4">
+            <TabsContent key={provider.ProviderCode} value={provider.ProviderCode} className="space-y-4 w-full">
               <div className="flex items-center justify-between">
                 <Label htmlFor={`${provider.ProviderCode}-enabled`}>有効</Label>
                 <Switch
