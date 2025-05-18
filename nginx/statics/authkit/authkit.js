@@ -1,4 +1,4 @@
-class AuthKit {
+class AuthBase {
     // 各種Auth URL
     static DiscordAuthURL = "/oauth/discord";
     static GoogleAuthURL = "/oauth/google";
@@ -61,19 +61,19 @@ class AuthKit {
     async OauthLogin(provider,LoginCallback) {
         // ポップアップ
         if (provider == "discord") {
-            this.openPopup(this.baseURL + AuthKit.DiscordAuthURL);
+            this.openPopup(this.baseURL + AuthBase.DiscordAuthURL);
         }
 
         if (provider == "google") {
-            this.openPopup(this.baseURL + AuthKit.GoogleAuthURL);
+            this.openPopup(this.baseURL + AuthBase.GoogleAuthURL);
         }
 
         if (provider == "github") {
-            this.openPopup(this.baseURL + AuthKit.GithubAuthURL);
+            this.openPopup(this.baseURL + AuthBase.GithubAuthURL);
         }
 
         if (provider == "microsoftonline") {
-            this.openPopup(this.baseURL + AuthKit.MicrosoftAuthURL);
+            this.openPopup(this.baseURL + AuthBase.MicrosoftAuthURL);
         }
 
         // コールバック
@@ -185,9 +185,9 @@ class AuthKit {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AuthKit;
+    module.exports = AuthBase;
 }
 
 if (typeof window !== 'undefined') {
-    window.AuthKit = AuthKit;
+    window.AuthBase = AuthBase;
 }

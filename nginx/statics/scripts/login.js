@@ -1,4 +1,4 @@
-const auth = new AuthKit('/auth/');
+const auth = new AuthBase('/auth/');
 
 async function Init() {
     // ログインしているか確認

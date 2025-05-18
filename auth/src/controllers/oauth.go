@@ -43,7 +43,7 @@ func CallbackOauth(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		// html を返す
-		return utils.ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err,oauthResponse.IsPopup)
+		return utils.ErrorScreen(ctx, http.StatusInternalServerError, utils.GenID(), err, oauthResponse.IsPopup)
 	}
 
 	// ユーザー
@@ -69,7 +69,7 @@ func CallbackOauth(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		// return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
-		return utils.ErrorScreen(ctx,http.StatusInternalServerError,utils.GenID(),err,oauthResponse.IsPopup)
+		return utils.ErrorScreen(ctx, http.StatusInternalServerError, utils.GenID(), err, oauthResponse.IsPopup)
 	}
 
 	logger.Println(token)
@@ -82,10 +82,10 @@ func CallbackOauth(ctx echo.Context) error {
 
 	// モバイル場合
 	if oauthResponse.IsMobile {
-		return ctx.Redirect(http.StatusFound, "authkit://?token="+token)
+		return ctx.Redirect(http.StatusFound, "authbase://?token="+token)
 	}
 
-	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{"token": token,"isPopup" : isPopup})
+	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{"token": token, "isPopup": isPopup})
 	// return ctx.JSON(http.StatusOK, echo.Map{"token": token})
 	// return ctx.Redirect(http.StatusFound, "/auth/")
 }

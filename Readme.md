@@ -1,8 +1,8 @@
-# AuthKit
+# AuthBase
 
 認証方法のテンプレートをまとめたリポジトリ
 
-[要件Issue](https://github.com/mattuu0/authkit/issues/1)
+[要件Issue](https://github.com/mattuu0/authbase/issues/1)
 
 # 環境構築
 - コンテナ構成

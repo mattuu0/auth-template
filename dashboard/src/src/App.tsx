@@ -30,7 +30,7 @@ function App() {
           <Route path="providers" element={<ProvidersPage />} />
           <Route path="sessions" element={<SessionsPage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/signup" replace />} />
       </Routes>
       <Toaster />
     </AuthProvider>

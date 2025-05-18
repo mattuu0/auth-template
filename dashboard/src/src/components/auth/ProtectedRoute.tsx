@@ -41,7 +41,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // 認証されていない場合はログインページにリダイレクト
   if (!isAuth) {
-    return <Navigate to={`./login?redirect=${encodeURIComponent(location.pathname)}`} replace />
+    return <Navigate to={`./signup?redirect=${encodeURIComponent(location.pathname)}`} replace />
   }
 
   // 認証されている場合は子コンポーネントを表示
