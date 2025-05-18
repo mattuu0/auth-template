@@ -55,6 +55,8 @@ tasks:
       - task: genkey
       - task: up
       - task: dbreset
+      - docker compose exec dashboard npm i --verbose --force
+      - docker compose exec dashboard npm run build
   restart:
     cmds:
       - docker compose restart auth
