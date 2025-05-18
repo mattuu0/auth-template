@@ -30,7 +30,8 @@ services:
             - ./auth/src:/root/src
         restart: always
         depends_on:
-            - mysql
+            mysql:
+                condition: service_healthy
     # ダッシュボード
     dashboard:
         hostname: dashboard
@@ -59,8 +60,10 @@ services:
             - ./app/src:/root/src
         restart: always
         depends_on:
-            - mysql
-            - auth
+            mysql:
+                condition: service_healthy
+            auth:
+                condition: service_started
     # データベース
     mysql:
         hostname: db
@@ -73,6 +76,11 @@ services:
             - dbdata:/var/lib/mysql
             - ./database/my.cnf:/etc/mysql/conf.d/my.cnf
             - ./database/script/init.sql:/docker-entrypoint-initdb.d/init.sql 
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "db", "-u", "root", "-proot"]
+            interval: 5s
+            timeout: 10s
+            retries: 5
 volumes:
     dbdata:
     
