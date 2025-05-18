@@ -26,24 +26,23 @@ services:
             - ./openssl/jwtKeys/private.env
             - ./config/auth.env
         volumes:
-            - distvol:/root/src/dashboard
             - ./auth/src:/root/src
         restart: always
         depends_on:
             mysql:
                 condition: service_healthy
     # ダッシュボード
-    dashboard:
-        hostname: dashboard
-        build:
-            context: ./dashboard
-            dockerfile: dockerfile
-            target: Develop
-        tty: true
-        volumes:
-            - distvol:/root/src/dist
-            - ./dashboard/src:/root/src
-        restart: always
+    # dashboard:
+    #     hostname: dashboard
+    #     build:
+    #         context: ./dashboard
+    #         dockerfile: dockerfile
+    #         target: Develop
+    #     tty: true
+    #     volumes:
+    #         - distvol:/root/src/dist
+    #         - ./dashboard/src:/root/src
+    #     restart: always
 
     # 認証用コンテナ
     app:
@@ -83,5 +82,3 @@ services:
             retries: 5
 volumes:
     dbdata:
-    
-    distvol:
