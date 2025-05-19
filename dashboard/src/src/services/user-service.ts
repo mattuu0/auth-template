@@ -1,6 +1,8 @@
 // ユーザー関連の操作を行うサービス
 // 実際の実装ではバックエンドAPIとの通信を行う
 
+import { baseURL } from "./config"
+
 export interface User {
   id: string
   name: string
@@ -31,7 +33,7 @@ let users: User[] = [];
 // ユーザー一覧を取得
 export async function getUsers(): Promise<User[]> {
   // APIからデータ取得
-  const req = await fetch("/auth/api/user/all", {
+  const req = await fetch(`${baseURL}/api/user/all`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -88,7 +90,7 @@ export async function updateUser(user: Partial<User> & { id: string }): Promise<
   console.log("Update user:", user)
 
   // ユーザーを更新する
-  const req = await fetch("/auth/api/user", {
+  const req = await fetch(`${baseURL}/api/user`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -110,7 +112,7 @@ export async function deleteUser(userId: string): Promise<void> {
   console.log("Delete user:", userId)
 
   // ユーザーを削除する
-  const req = await fetch("/auth/api/user", {
+  const req = await fetch(`${baseURL}/api/user`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -137,7 +139,7 @@ export async function toggleUserBan(userId: string): Promise<User> {
     users[index].banned = !users[index].banned
 
     // リクエストを送る
-    const req = await fetch("/auth/api/user/ban",{
+    const req = await fetch(`${baseURL}/api/user/ban`,{
       method: "PUT",
       headers: {
         'Content-Type': 'application/json',

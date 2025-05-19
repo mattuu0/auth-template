@@ -2,6 +2,7 @@
 // 実際の実装ではバックエンドAPIとの通信を行う
 
 import { Provider } from "@radix-ui/react-toast"
+import { baseURL } from "./config"
 
 export interface Provider {
   ProviderCode: string
@@ -18,7 +19,7 @@ let provicers: Provider[] = []
 // プロバイダ一覧を取得
 export async function getProviders(): Promise<Provider[]> {
   // API からデータ取得
-  const req = await fetch("/auth/api/providers/oauth", {
+  const req = await fetch(`${baseURL}/api/providers/oauth`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -37,7 +38,7 @@ export async function updateProvider(provider: Provider): Promise<Provider> {
   console.log("Update provider:", provider)
 
   // API を送信
-  const req = await fetch("/auth/api/providers/oauth", {
+  const req = await fetch(`${baseURL}/api/providers/oauth`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

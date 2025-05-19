@@ -7,7 +7,7 @@ import "./index.css"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter basename="/auth/_/">
+    <BrowserRouter basename={window.location.pathname.split("/_/")[0] + "/_/"}>
       <ThemeProvider defaultTheme="system" storageKey="ui-theme">
         <App />
       </ThemeProvider>

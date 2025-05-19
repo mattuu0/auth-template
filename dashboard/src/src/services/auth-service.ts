@@ -1,6 +1,8 @@
 // 認証関連の操作を行うサービス
 // 実際の実装ではバックエンドAPIとの通信を行う
 
+import { baseURL } from "./config";
+
 export interface AuthUser {
   UserID: string
   Username: string
@@ -13,7 +15,7 @@ export async function checkAdminExists(): Promise<boolean> {
   // console.log("Checking if admin exists")
 
   // API を呼び出す
-  const req = await fetch("/auth/admin/status",{
+  const req = await fetch(`${baseURL}/admin/status`,{
     method: "GET",
   });
 
@@ -33,7 +35,7 @@ export async function checkAdminExists(): Promise<boolean> {
 // ログイン処理
 export async function login(email: string, password: string): Promise<void> {
   // API を呼び出す
-  const req = await fetch("/auth/admin/login", {
+  const req = await fetch(`${baseURL}/admin/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -63,7 +65,7 @@ export async function signup(email: string, password: string): Promise<void> {
   console.log("Signup attempt:", { email, password })
 
   // API を呼び出してユーザーを作成する
-  const req = await fetch("/auth/admin/signup", {
+  const req = await fetch(`${baseURL}/admin/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -93,7 +95,7 @@ export async function logout(): Promise<void> {
   // 実際の実装ではAPIを呼び出してセッションを破棄
   console.log("Logout")
 
-  const req = await fetch("/auth/admin/logout",{
+  const req = await fetch(`${baseURL}/admin/logout`,{
     method: "POST",
   });
 
@@ -108,7 +110,7 @@ export async function logout(): Promise<void> {
 // 現在のユーザーを取得
 export async function getCurrentUser(): Promise<AuthUser | null> {
   // ユーザー情報を取得
-  const req = await fetch("/auth/admin/info",{
+  const req = await fetch(`${baseURL}/admin/info`,{
     method: "GET",
   });
 

@@ -1,6 +1,8 @@
 // ラベル関連の操作を行うサービス
 // 実際の実装ではバックエンドAPIとの通信を行う
 
+import { baseURL } from "./config"
+
 export interface Label {
   id: string
   name: string
@@ -8,12 +10,13 @@ export interface Label {
   createdAt: string
 }
 
+
 // データを保持する変数
 let labels: Label[] = []
 
 // ラベル一覧を取得
 export async function getLabels(): Promise<Label[]> {
-  const req = await fetch("/auth/api/labels", {
+  const req = await fetch(`${baseURL}/api/labels`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -38,7 +41,7 @@ export async function createLabel(label: Omit<Label, "id" | "createdAt">) {
   // 実際の実装ではAPIを呼び出してラベルを作成
   console.log("Create label:", label)
   // ラベルを作成する
-  const req = await fetch("/auth/api/labels", {
+  const req = await fetch(`${baseURL}/api/labels`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -60,7 +63,7 @@ export async function updateLabel(label: Partial<Label> & { id: string }) {
   // 実際の実装ではAPIを呼び出してラベルを更新
   console.log("Update label:", label);
 
-  const req = await fetch("/auth/api/labels", {
+  const req = await fetch(`${baseURL}/api/labels`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -80,7 +83,7 @@ export async function deleteLabel(labelId: string) {
   // 実際の実装ではAPIを呼び出してラベルを削除
   console.log("Delete label:", labelId)
 
-  const req = await fetch("/auth/api/labels", {
+  const req = await fetch(`${baseURL}/api/labels`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
