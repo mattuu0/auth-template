@@ -27,6 +27,15 @@ func GetLabel(name string) (*Label, error) {
 	return &label, err
 }
 
+// ID からラベルを取得する
+func GetLabelByID(id uint) (*Label, error) {
+	var label Label
+
+	// 取得する
+	err := dbconn.Where(&Label{ID: id}).First(&label).Error
+	return &label, err
+}
+
 func CreateLabel(label *Label) error {
 	return dbconn.Create(label).Error
 }

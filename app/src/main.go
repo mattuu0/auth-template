@@ -1,6 +1,7 @@
 package main
 
 import (
+	"app/grpckit"
 	"app/middlewares"
 	"app/models"
 	"app/services"
@@ -19,6 +20,19 @@ func Init() {
 
 	// ミドルウェア初期化
 	middlewares.Init()
+
+	// GRPC クライアント初期化
+	grpckit.Init()
+
+	// result,err := grpckit.SearchUser("", "test")
+
+	// // エラー処理
+	// if err != nil {
+	// 	logger.PrintErr(err)
+	// 	return
+	// }
+
+	// logger.Println(result)
 }
 
 func main() {
