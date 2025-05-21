@@ -15,23 +15,6 @@ class AuthBase {
         this.baseURL = url;
     }
 
-    async login(username, password) {
-        const response = await fetch(this.baseURL + '/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            return data.token;
-        } else {
-            throw new Error('Login failed');
-        }
-    }
-
     // ログアウトする関数
     async Logout() {
         // ログアウトする (リフレッシュトークンでログアウトする)
@@ -111,6 +94,20 @@ class AuthBase {
         }
 
         return null;
+    }
+
+    // アイコンを更新する
+    async UpdateIcon(file) {
+        const req = await fetch(this.baseURL + '/icon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": localStorage.getItem("token")
+            },
+            body: file
+        });
+
+        return req.ok;
     }
 
     openPopup(url) {

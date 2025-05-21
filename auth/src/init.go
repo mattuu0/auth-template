@@ -47,7 +47,8 @@ func SetupRouter(router *echo.Echo) {
 	// 	basicg.POST("/login", controllers.LoginBasicUser)
 	// }
 
-	buildDir := "dashboard" // React のビルド出力ディレクトリを指定
+	// React のビルド出力ディレクトリを指定
+	buildDir := "dashboard" 
 
 	// サブパスの設定 (/_/ 配下に React アプリを配信)
 	subPath := "/_"
@@ -81,8 +82,12 @@ func SetupRouter(router *echo.Echo) {
 	// token を取得する
 	router.GET("/token", controllers.GetToken, middlewares.RequireAuth)
 
+	// アイコンを変更する
+	router.POST("/icon", controllers.ChangeIcon, middlewares.RequireAuth)
+
 	// ログアウト
 	router.POST("/logout", controllers.Logout, middlewares.RequireAuth)
+
 
 	// admin グループ
 	adming := router.Group("/admin")

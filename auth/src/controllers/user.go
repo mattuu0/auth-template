@@ -126,3 +126,52 @@ func ToggleBan(ctx echo.Context) error {
 		"result" : "success",
 	})
 }
+
+// アイコンを更新する
+func UpdateIcon(ctx echo.Context) error {
+	// ユーザーID を取得
+	userID := ctx.Param("userid")
+
+	// ファイルを取得
+	file, err := ctx.FormFile("file")
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusBadRequest,echo.Map{
+			"result" : err.Error(),
+		})
+	}
+
+	// ファイルを開く
+	imgFile, err := file.Open()
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusInternalServerError,echo.Map{
+			"result" : err.Error(),
+		})
+	}
+
+	// アイコンを更新する
+	iconArgs := services.UpdateIconArgs{
+		UserID: userID,
+		ImgFile:   imgFile,
+	}
+
+	// アイコンを更新する
+	err = services.UpdateIcon(iconArgs)
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusInternalServerError,echo.Map{
+			"result" : err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK,echo.Map{
+		"result" : "success",
+	})
+}

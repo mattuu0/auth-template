@@ -3,6 +3,7 @@ package services
 import (
 	"auth/logger"
 	"auth/models"
+	"mime/multipart"
 	"os"
 	"strconv"
 	"time"
@@ -225,6 +226,28 @@ func ToggleBan(args BanArgs) error {
 
 	// ユーザーを更新する
 	return models.UpdateUser(user)
+}
+
+// ここまで
+
+// ここからユーザーのアイコンを更新
+type UpdateIconArgs struct {
+	UserID string
+	ImgFile multipart.File
+}
+
+func UpdateIcon(args UpdateIconArgs) error {
+	// ユーザーを取得する
+	user, result := models.GetUser(args.UserID)
+
+	// エラー処理
+	if result.Error != nil {
+		return result.Error
+	}
+
+
+	// アイコンを更新する
+	return user.UpdateIcon(args.ImgFile)
 }
 
 // ここまで
