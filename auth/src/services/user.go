@@ -8,6 +8,26 @@ import (
 	"time"
 )
 
+type GetUserInfo struct {
+	UserID   string `json:"user_id"`
+	Name     string `json:"name"`
+}
+
+func GetInfo(userid string) (GetUserInfo, error) {
+	// ユーザー取得
+	user, result := models.GetUser(userid)
+
+	// エラー処理
+	if result.Error != nil {
+		return GetUserInfo{}, result.Error
+	}
+
+	return GetUserInfo{
+		UserID:   user.UserID,
+		Name:     user.Name,
+	}, nil
+}
+
 type UserInfo struct {
 	UserID   string `json:"user_id"`
 	Name     string `json:"name"`

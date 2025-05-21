@@ -72,6 +72,9 @@ func SetupRouter(router *echo.Echo) {
 	// アイコンフォルダを配信する
 	router.Static("/assets", "./assets/icons")
 
+	// info エンドポイント
+	router.GET("/info/:userid", controllers.GetInfo)
+
 	// 情報を取得する
 	router.GET("/me", controllers.GetMe, middlewares.RequireAuth)
 

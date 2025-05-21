@@ -9,6 +9,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func GetInfo(ctx echo.Context) error {
+	// UserID を取得
+	userID := ctx.Param("userid")
+
+	// ユーザーを取得
+	user, err := services.GetInfo(userID)
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+
+	return ctx.JSON(http.StatusOK, user)
+}
+
 func GetMe(ctx echo.Context) error {
 	// セッションを取得
 	session, ok := ctx.Get("session").(*models.Session)
