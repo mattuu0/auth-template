@@ -29,7 +29,7 @@ services:
         volumes:
             - ./auth/src:/root/src
             - iconVol:/assets/icons
-            - distvol:/root/src/dashboard
+            # - distvol:/root/src/dashboard
         restart: always
         depends_on:
             mysql:
