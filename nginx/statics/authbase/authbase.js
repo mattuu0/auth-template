@@ -98,14 +98,18 @@ class AuthBase {
 
     // アイコンを更新する
     async UpdateIcon(file) {
+        // フォームデータ作成
+        const payload = new FormData();
+        payload.append('file', file);
+
+        // アイコンを更新する
         const req = await fetch(this.baseURL + '/icon', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 "Authorization": localStorage.getItem("token")
             },
-            body: file
-        });
+            body: payload
+        })
 
         return req.ok;
     }
@@ -132,11 +136,7 @@ class AuthBase {
             body: body
         });
 
-        if (req.ok) {
-            return await req.json();
-        }
-
-        return null;
+        return req;
     }
 
     async Get(url,headers) {
@@ -149,11 +149,7 @@ class AuthBase {
             headers: headers,
         });
 
-        if (req.ok) {
-            return await req.json();
-        }
-
-        return null;
+        return req;
     }
     
     async GetInfo() {

@@ -48,7 +48,7 @@ func SetupRouter(router *echo.Echo) {
 	// }
 
 	// React のビルド出力ディレクトリを指定
-	buildDir := "dashboard" 
+	buildDir := "dashboard"
 
 	// サブパスの設定 (/_/ 配下に React アプリを配信)
 	subPath := "/_"
@@ -69,7 +69,7 @@ func SetupRouter(router *echo.Echo) {
 		indexPath := filepath.Join(buildDir, "index.html")
 		return ctx.File(indexPath)
 	})
-
+	
 	// アイコンフォルダを配信する
 	router.Static("/assets", "./assets/icons")
 
@@ -87,7 +87,6 @@ func SetupRouter(router *echo.Echo) {
 
 	// ログアウト
 	router.POST("/logout", controllers.Logout, middlewares.RequireAuth)
-
 
 	// admin グループ
 	adming := router.Group("/admin")

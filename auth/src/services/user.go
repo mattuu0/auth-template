@@ -104,7 +104,7 @@ func UpdateUser(args UpdateUserData) error {
 	}
 
 	// 10mbまでの画像を保存
-	err = ProcessAndSaveImage(IconDir+"/"+args.ID+".png", args.Avatar, MaxImageSize)
+	err = ProcessAndSaveImage(IconDir + "/" + args.ID + ".png", args.Avatar, MaxImageSize)
 
 	// エラー処理
 	if err != nil {
@@ -245,9 +245,15 @@ func UpdateIcon(args UpdateIconArgs) error {
 		return result.Error
 	}
 
+	// 画像をリサイズして保存する
+	_, err := SaveResizedImage(args.ImgFile, user.UserID, IconWidth, IconHeight, IconDir)
 
-	// アイコンを更新する
-	return user.UpdateIcon(args.ImgFile)
+	// エラー処理
+	if err != nil {
+		return err
+	}
+	
+	return nil
 }
 
 // ここまで

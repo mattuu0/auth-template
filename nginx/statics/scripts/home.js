@@ -20,6 +20,7 @@ async function Init() {
         document.getElementById('user-email').textContent = userData.email;
         document.getElementById('prov-code').textContent = userData.prov_code;
         document.getElementById('prov-uid').textContent = userData.prov_uid;
+        document.getElementById('user-icon').src = '/auth/assets/' + userData.user_id + '.png';
 
         // ログアウトボタン取得
         const logoutButton = document.getElementById('logout-button');
@@ -35,6 +36,16 @@ async function Init() {
                 // ログインにリダイレクト
                 window.location.href = './login.html';
             }
+        });
+
+        // アップロードボタン取得
+        const uploadButton = document.getElementById('upload-button');
+        // ファイル選択を取得
+        const fileInput = document.getElementById('file-input');
+
+        // アップロードボタンをクリックするとアップロード
+        uploadButton.addEventListener('click',async () => {
+            await auth.UpdateIcon(fileInput.files[0]);
         });
     } catch (error) {
         console.error(error);

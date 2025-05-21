@@ -5,12 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/jpeg"
 	"image/png"
 	"io"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,116 +17,43 @@ import (
 	"golang.org/x/image/draw"
 )
 
-// 対応している画像形式
-const (
-	FormatJPEG = "jpeg"
-	FormatPNG  = "png"
-	FormatGIF  = "gif"
-	FormatBMP  = "bmp"
-)
-
 // SaveResizedImage は multipart.File からの画像を指定サイズにリサイズして保存します
 // params:
 //   - file: アップロードされたファイルのmultipart.File
 //   - filename: ファイル名
 //   - fileSize: ファイルサイズ
-//   - maxWidth: リサイズ後の最大幅
-//   - maxHeight: リサイズ後の最大高さ
-//   - quality: JPEG画像の品質 (0-100)
+//   - width: リサイズ後の幅
+//   - height: リサイズ後の高さ
 //   - saveDir: 保存先ディレクトリ
 //
 // return:
 //   - string: 保存されたファイルのパス
 //   - error: エラー
-func SaveResizedImage(file multipart.File, filename string, fileSize int64, maxWidth, maxHeight, quality int, saveDir string) (string, error) {
-	// ファイルサイズのチェック
-	if fileSize <= 0 {
-		return "", errors.New("invalid file size")
-	}
+func SaveResizedImage(file multipart.File, filename string, width, height int, saveDir string) (string, error) {
 
-	// ファイル名と拡張子の抽出
+	// ファイル名の拡張子をチェック
 	ext := strings.ToLower(filepath.Ext(filename))
 	if ext == "" {
-		return "", errors.New("file has no extension")
-	}
-	ext = ext[1:] // 先頭の "." を削除
-
-	// 対応している画像形式かどうかチェック
-	var format string
-	switch ext {
-	case "jpg", "jpeg":
-		format = FormatJPEG
-	case "png":
-		format = FormatPNG
-	case "gif":
-		format = FormatGIF
-	case "bmp":
-		format = FormatBMP
-	default:
-		return "", fmt.Errorf("unsupported image format: %s", ext)
+		// 拡張子がない場合はPNGとして扱う
+		filename = filename + ".png"
+	} else {
+		// 出力は常にPNGなので、元の拡張子をPNGに置き換える
+		filename = strings.TrimSuffix(filename, ext) + ".png"
 	}
 
-	// 画像をデコード
+	// ファイルポインタを先頭に戻す
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return "", fmt.Errorf("failed to seek file: %w", err)
+	}
+
+	// 画像をデコード (EXIFデータは除去される)
 	img, _, err := image.Decode(file)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode image: %w", err)
 	}
 
-	// 元の画像サイズを取得
-	bounds := img.Bounds()
-	width, height := bounds.Dx(), bounds.Dy()
-
-	// リサイズが必要か判断
-	var resized bool
-	if width > maxWidth || height > maxHeight {
-		// アスペクト比を維持してリサイズ
-		ratio := float64(width) / float64(height)
-		if width > maxWidth {
-			width = maxWidth
-			height = int(float64(width) / ratio)
-		}
-		if height > maxHeight {
-			height = maxHeight
-			width = int(float64(height) * ratio)
-		}
-		resized = true
-	}
-
-	var dst *image.RGBA
-	if resized {
-		// リサイズ先の画像を作成
-		dst = image.NewRGBA(image.Rect(0, 0, width, height))
-
-		// リサイズ実行
-		draw.CatmullRom.Scale(dst, dst.Bounds(), img, img.Bounds(), draw.Over, nil)
-	} else {
-		// リサイズ不要の場合は元のサイズでRGBAに変換
-		dst = image.NewRGBA(image.Rect(0, 0, width, height))
-		draw.Draw(dst, dst.Bounds(), img, bounds.Min, draw.Src)
-	}
-
-	// 保存先ディレクトリが存在しない場合は作成
-	if err := os.MkdirAll(saveDir, 0755); err != nil {
-		return "", fmt.Errorf("failed to create directory: %w", err)
-	}
-
-	// ユニークなファイル名を生成（ここではタイムスタンプを使用）
-	newFilename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), filepath.Base(filename))
-	savePath := filepath.Join(saveDir, newFilename)
-
-	// ファイルを作成
-	outFile, err := os.Create(savePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to create file: %w", err)
-	}
-	defer outFile.Close()
-
-	// 画像を書き込み（EXIFデータは除去される）
-	if err := encodeImage(outFile, dst, format, quality); err != nil {
-		return "", fmt.Errorf("failed to encode image: %w", err)
-	}
-
-	return savePath, nil
+	// リサイズした画像を保存
+	return saveResizedImageToPNG(img, filename, width, height, saveDir)
 }
 
 // SaveResizedImageFromBytes はバイトスライスからの画像を指定サイズにリサイズして保存します
@@ -147,107 +72,133 @@ func SaveResizedImageFromBytes(imageData []byte, filename string, width, height 
 		return "", errors.New("empty image data")
 	}
 
+	// ファイル名の拡張子をチェック
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext == "" {
+		// 拡張子がない場合はPNGとして扱う
+		filename = filename + ".png"
+	} else {
+		// 出力は常にPNGなので、元の拡張子をPNGに置き換える
+		filename = strings.TrimSuffix(filename, ext) + ".png"
+	}
+
 	// バイトスライスをReaderに変換
 	reader := bytes.NewReader(imageData)
 
-	// 画像処理
-	img, err := processAndResizeImage(reader, width, height)
+	// 画像をデコード
+	img, _, err := image.Decode(reader)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to decode image from bytes: %w", err)
 	}
 
-	// PNG形式で画像保存
-	return saveProcessedImage(img, filename, saveDir)
+	// リサイズした画像を保存
+	return saveResizedImageToPNG(img, filename, width, height, saveDir)
 }
 
-// 使用例
-// ExampleUsage は関数の使用例を示します
-func ExampleUsage() {
-	// HTTPハンドラでの使用例 - multipart.Fileを使用
-	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
-		// ファイルを取得
-		file, header, err := r.FormFile("image")
-		if err != nil {
-			http.Error(w, "Failed to get file: "+err.Error(), http.StatusBadRequest)
-			return
-		}
-		defer file.Close()
+// SaveResizedImageFromURL はURLから画像をダウンロードしてリサイズし保存します
+// params:
+//   - imageURL: 画像のURL
+//   - filename: 保存するファイル名（指定がない場合はURLから取得）
+//   - width: リサイズ後の幅
+//   - height: リサイズ後の高さ
+//   - saveDir: 保存先ディレクトリ
+//
+// return:
+//   - string: 保存されたファイルのパス
+//   - error: エラー
+func SaveResizedImageFromURL(imageURL string, filename string, width, height int, saveDir string) (string, error) {
+	// URLが空でないか確認
+	if imageURL == "" {
+		return "", errors.New("empty image URL")
+	}
 
-		// 画像をリサイズして保存（強制的に800x600にリサイズ、PNG形式で保存）
-		savePath, err := SaveResizedImage(
-			file,            // multipart.File
-			header.Filename, // ファイル名
-			header.Size,     // ファイルサイズ
-			800,             // 幅を800pxに指定
-			600,             // 高さを600pxに指定
-			"./uploads",     // 保存先ディレクトリ
-		)
-
-		if err != nil {
-			http.Error(w, "Failed to process image: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Fprintf(w, "Image saved to: %s", savePath)
-	})
-
-	// バイトスライスを使用した例
-	http.HandleFunc("/upload-bytes", func(w http.ResponseWriter, r *http.Request) {
-		// ファイルを取得してバイトとして読み込む
-		file, header, err := r.FormFile("image")
-		if err != nil {
-			http.Error(w, "Failed to get file: "+err.Error(), http.StatusBadRequest)
-			return
-		}
-		defer file.Close()
-
-		// ファイルの内容を読み込む
-		imageData, err := io.ReadAll(file)
-		if err != nil {
-			http.Error(w, "Failed to read file: "+err.Error(), http.StatusInternalServerError)
-			return
+	// ファイル名が指定されていない場合はURLから取得
+	if filename == "" {
+		urlParts := strings.Split(imageURL, "/")
+		if len(urlParts) > 0 {
+			filename = urlParts[len(urlParts)-1]
+			// クエリパラメータを除去
+			if idx := strings.Index(filename, "?"); idx != -1 {
+				filename = filename[:idx]
+			}
 		}
 
-		// バイトスライスから画像をリサイズして保存
-		savePath, err := SaveResizedImageFromBytes(
-			imageData,       // []byte
-			header.Filename, // ファイル名
-			800,             // 幅を800pxに指定
-			600,             // 高さを600pxに指定
-			"./uploads",     // 保存先ディレクトリ
-		)
-
-		if err != nil {
-			http.Error(w, "Failed to process image: "+err.Error(), http.StatusInternalServerError)
-			return
+		// それでもファイル名がない場合はタイムスタンプを使用
+		if filename == "" {
+			filename = fmt.Sprintf("image_%d.png", time.Now().UnixNano())
 		}
+	}
 
-		fmt.Fprintf(w, "Image saved to: %s", savePath)
-	})
+	// ファイル名の拡張子をチェック
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext == "" {
+		// 拡張子がない場合はPNGとして扱う
+		filename = filename + ".png"
+	} else {
+		// 出力は常にPNGなので、元の拡張子をPNGに置き換える
+		filename = strings.TrimSuffix(filename, ext) + ".png"
+	}
 
-	// URLから画像を取得してリサイズする例
-	http.HandleFunc("/upload-url", func(w http.ResponseWriter, r *http.Request) {
-		// URLからパラメータを取得
-		imageURL := r.URL.Query().Get("url")
-		if imageURL == "" {
-			http.Error(w, "Missing image URL", http.StatusBadRequest)
-			return
-		}
+	// HTTPリクエストを作成
+	resp, err := http.Get(imageURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to download image from URL: %w", err)
+	}
+	defer resp.Body.Close()
 
-		// URLから画像をダウンロード、リサイズして保存
-		savePath, err := SaveResizedImageFromURL(
-			imageURL,    // 画像URL
-			"",          // ファイル名 (空白の場合URLから自動抽出)
-			800,         // 幅を800pxに指定
-			600,         // 高さを600pxに指定
-			"./uploads", // 保存先ディレクトリ
-		)
+	// レスポンスのステータスコードをチェック
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to download image, status code: %d", resp.StatusCode)
+	}
 
-		if err != nil {
-			http.Error(w, "Failed to process image: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
+	// 画像をデコード
+	img, _, err := image.Decode(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode image from URL: %w", err)
+	}
 
-		fmt.Fprintf(w, "Image saved to: %s", savePath)
-	})
+	// リサイズした画像を保存
+	return saveResizedImageToPNG(img, filename, width, height, saveDir)
 }
+
+// saveResizedImageToPNG は画像を指定サイズにリサイズしてPNG形式で保存する共通処理
+// params:
+//   - img: リサイズ対象の画像
+//   - filename: 保存するファイル名
+//   - width: リサイズ後の幅
+//   - height: リサイズ後の高さ
+//   - saveDir: 保存先ディレクトリ
+//
+// return:
+//   - string: 保存されたファイルのパス
+//   - error: エラー
+func saveResizedImageToPNG(img image.Image, filename string, width, height int, saveDir string) (string, error) {
+	// リサイズ先の画像を作成（アスペクト比を保持せずに強制的にリサイズ）
+	dst := image.NewRGBA(image.Rect(0, 0, width, height))
+
+	// リサイズ実行
+	draw.CatmullRom.Scale(dst, dst.Bounds(), img, img.Bounds(), draw.Over, nil)
+
+	// 保存先ディレクトリが存在しない場合は作成
+	if err := os.MkdirAll(saveDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	// 保存先パスを作成
+	savePath := filepath.Join(saveDir, filepath.Base(filename))
+
+	// ファイルを作成
+	outFile, err := os.Create(savePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to create file: %w", err)
+	}
+	defer outFile.Close()
+
+	// PNG形式で画像を保存
+	if err := png.Encode(outFile, dst); err != nil {
+		return "", fmt.Errorf("failed to encode image as PNG: %w", err)
+	}
+
+	return savePath, nil
+}
+

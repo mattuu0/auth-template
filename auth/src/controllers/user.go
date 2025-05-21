@@ -128,7 +128,7 @@ func ToggleBan(ctx echo.Context) error {
 }
 
 // アイコンを更新する
-func UpdateIcon(ctx echo.Context) error {
+func ChangeIcon(ctx echo.Context) error {
 	// ユーザーID を取得
 	userID := ctx.Param("userid")
 
