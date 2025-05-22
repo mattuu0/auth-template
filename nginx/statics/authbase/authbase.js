@@ -22,7 +22,7 @@ class AuthBase {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                "Authorization" : localStorage.getItem("token")
+                "Authorization": localStorage.getItem("token")
             }
         });
 
@@ -41,7 +41,7 @@ class AuthBase {
         return;
     }
 
-    async OauthLogin(provider,LoginCallback) {
+    async OauthLogin(provider, LoginCallback) {
         // ポップアップ
         if (provider == "discord") {
             this.openPopup(this.baseURL + AuthBase.DiscordAuthURL);
@@ -125,7 +125,7 @@ class AuthBase {
         });
     }
 
-    async Post(url,headers,body) {
+    async Post(url, headers, body) {
         // header にトークンを追加
         headers.Authorization = await this.getToken();
 
@@ -139,7 +139,7 @@ class AuthBase {
         return req;
     }
 
-    async Get(url,headers) {
+    async Get(url, headers) {
         // header にトークンを追加
         headers.Authorization = await this.getToken();
 
@@ -151,7 +151,7 @@ class AuthBase {
 
         return req;
     }
-    
+
     async GetInfo() {
         try {
             // 情報を取得
@@ -174,6 +174,10 @@ class AuthBase {
             console.error(error);
             return null;
         }
+    }
+
+    GetIcon(userid) {
+        return this.baseURL + "/icon/" + userid;
     }
 }
 

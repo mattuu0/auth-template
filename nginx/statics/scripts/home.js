@@ -20,7 +20,12 @@ async function Init() {
         document.getElementById('user-email').textContent = userData.email;
         document.getElementById('prov-code').textContent = userData.prov_code;
         document.getElementById('prov-uid').textContent = userData.prov_uid;
-        document.getElementById('user-icon').src = '/auth/assets/' + userData.user_id + '.png';
+
+        try {
+            document.getElementById('user-icon').src = auth.GetIcon(userData.user_id);
+        } catch (error) {
+            console.error(error);
+        }
 
         // ログアウトボタン取得
         const logoutButton = document.getElementById('logout-button');

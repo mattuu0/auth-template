@@ -252,8 +252,12 @@ func UpdateIcon(args UpdateIconArgs) error {
 	if err != nil {
 		return err
 	}
-	
-	return nil
+
+	// 更新日時を更新する
+	user.UpdatedAt = time.Now().Unix()
+
+	// ユーザーを更新する
+	return models.UpdateUser(user)
 }
 
 // ここまで
