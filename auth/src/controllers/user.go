@@ -175,3 +175,19 @@ func ChangeIcon(ctx echo.Context) error {
 		"result" : "success",
 	})
 }
+
+func GetIcon(ctx echo.Context) error {
+	// ユーザーID を取得
+	userID := ctx.Param("userid")
+
+	// アイコンを取得する
+	iconUrl, err := services.GetIcon(userID)
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.NoContent(http.StatusNotFound)
+	}
+
+	return ctx.Redirect(http.StatusTemporaryRedirect, iconUrl)
+}

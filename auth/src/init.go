@@ -69,7 +69,7 @@ func SetupRouter(router *echo.Echo) {
 		indexPath := filepath.Join(buildDir, "index.html")
 		return ctx.File(indexPath)
 	})
-	
+
 	// アイコンフォルダを配信する
 	router.Static("/assets", "./assets/icons")
 
@@ -84,6 +84,9 @@ func SetupRouter(router *echo.Echo) {
 
 	// アイコンを変更する
 	router.POST("/icon", controllers.ChangeIcon, middlewares.RequireAuth)
+
+	// アイコンを取得する
+	router.GET("/icon/:userid",controllers.GetIcon)
 
 	// ログアウト
 	router.POST("/logout", controllers.Logout, middlewares.RequireAuth)

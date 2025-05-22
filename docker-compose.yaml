@@ -11,7 +11,7 @@ services:
             - ./nginx/configs:/etc/nginx/conf.d/
             - ./nginx/keys:/etc/nginx/keys
             - ./nginx/statics:/etc/nginx/static/statics
-    
+
     # 認証用コンテナ
     auth:
         hostname: auth
@@ -29,7 +29,7 @@ services:
         volumes:
             - ./auth/src:/root/src
             - iconVol:/assets/icons
-            # - distvol:/root/src/dashboard
+            - distvol:/root/src/dashboard
         restart: always
         depends_on:
             mysql:
@@ -44,7 +44,7 @@ services:
             target: Develop
         tty: true
         volumes:
-            # - distvol:/root/src/dist
+            - distvol:/root/src/dist
             - ./dashboard/src:/root/src
         restart: always
 

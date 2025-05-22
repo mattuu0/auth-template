@@ -257,3 +257,18 @@ func UpdateIcon(args UpdateIconArgs) error {
 }
 
 // ここまで
+
+// ここから
+// アイコンを取得する
+func GetIcon(userid string) (string, error) {
+	// ユーザーを取得する
+	user, result := models.GetUser(userid)
+
+	// エラー処理
+	if result.Error != nil {
+		return "", result.Error
+	}
+
+	return "/auth/assets/" + user.UserID + ".png?uptime=" + strconv.FormatInt(user.UpdatedAt, 10), nil
+}
+// ここまで
